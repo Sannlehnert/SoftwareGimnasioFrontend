@@ -1,0 +1,23 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "loading": "Cargando...",
+    "error": "Error"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "emailOrDni": "Email o DNI",
+    "password": "Contraseña"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "alumnosAlDia": "Alumnos al día",
+    "cuotaVencida30": "Cuota vencida < 30 días",
+    "cuotaVencida30Plus": "Cuota vencida > 30 días",
+    "ingresosMes": "Ingresos del mes"
+  }
+}
