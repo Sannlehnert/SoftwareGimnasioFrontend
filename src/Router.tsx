@@ -16,6 +16,10 @@ import Productos from './pages/Admin/Productos';
 import Informes from './pages/Admin/Informes';
 import PantallaAcceso from './pages/Admin/PantallaAcceso';
 import Configuracion from './pages/Admin/Configuracion';
+import NuevoPago from './pages/Admin/NuevoPago';
+import NuevaRutina from './pages/Admin/NuevaRutina';
+import CuentaCorriente from './pages/Admin/CuentaCorriente';
+import Clases from './pages/Admin/Clases';
 
 // Alumno Pages
 import AlumnoInicio from './pages/Alumno/Inicio';
@@ -52,11 +56,15 @@ const Router = () => {
           <Route path="alumnos" element={<Alumnos />} />
           <Route path="alumnos/nuevo" element={<NuevoAlumno />} />
           <Route path="alumnos/:id" element={<AlumnoDetail />} />
+          <Route path="pagos/nuevo" element={<NuevoPago />} />
           <Route path="rutinas" element={<Rutinas />} />
+          <Route path="rutinas/nueva" element={<NuevaRutina />} />
           <Route path="turnos" element={<Turnos />} />
+          <Route path="clases" element={<Clases />} />
           <Route path="caja" element={<Caja />} />
           <Route path="productos" element={<Productos />} />
           <Route path="informes" element={<Informes />} />
+          <Route path="cuenta-corriente" element={<CuentaCorriente />} />
           <Route path="pantalla-acceso" element={<PantallaAcceso />} />
           <Route path="configuracion" element={<Configuracion />} />
         </Route>

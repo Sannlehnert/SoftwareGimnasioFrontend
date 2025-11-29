@@ -2,238 +2,85 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { informesService } from '../../api/services/informes';
 import Button from '../../components/ui/Button';
+import { useToast } from '../../context/ToastProvider';
 
 const Informes: React.FC = () => {
-  const [fechaDesde, setFechaDesde] = useState(
-    new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  );
-  const [fechaHasta, setFechaHasta] = useState(
-    new Date().toISOString().split('T')[0]
-  );
-  const [tipoInforme, setTipoInforme] = useState<'cobros' | 'ingresos' | 'asistencia' | 'ventas'>('cobros');
+  const { addToast } = useToast();
+  const [fechaDesde, setFechaDesde] = useState(() => {
+    const date = new Date();
+    date.setMonth(date.getMonth() - 1);
+    return date.toISOString().split('T')[0];
+  });
+  const [fechaHasta, setFechaHasta] = useState(() => new Date().toISOString().split('T')[0]);
 
-  const { data: informeCobros, isLoading: loadingCobros } = useQuery({
-    queryKey: ['informe-cobros', fechaDesde, fechaHasta],
-    queryFn: () => informesService.getInformeCobros({ desde: fechaDesde, hasta: fechaHasta }),
-    enabled: tipoInforme === 'cobros'
+  const { data: ingresosMensuales } = useQuery({
+    queryKey: ['informes', 'ingresos-mensuales', fechaDesde, fechaHasta],
+    queryFn: () => informesService.getInformeIngresos({ desde: fechaDesde, hasta: fechaHasta })
   });
 
-  const { data: informeIngresos, isLoading: loadingIngresos } = useQuery({
-    queryKey: ['informe-ingresos', fechaDesde, fechaHasta],
-    queryFn: () => informesService.getInformeIngresos({ desde: fechaDesde, hasta: fechaHasta }),
-    enabled: tipoInforme === 'ingresos'
+  const { data: asistencias } = useQuery({
+    queryKey: ['informes', 'asistencias', fechaDesde, fechaHasta],
+    queryFn: () => informesService.getMapaCalor({ desde: fechaDesde, hasta: fechaHasta })
   });
 
-  const { data: mapaCalor, isLoading: loadingMapaCalor } = useQuery({
-    queryKey: ['mapa-calor', fechaDesde, fechaHasta],
-    queryFn: () => informesService.getMapaCalor({ desde: fechaDesde, hasta: fechaHasta }),
-    enabled: tipoInforme === 'asistencia'
+  const { data: pagosPorMetodo } = useQuery({
+    queryKey: ['informes', 'pagos-metodo', fechaDesde, fechaHasta],
+    queryFn: () => informesService.getInformeCobros({ desde: fechaDesde, hasta: fechaHasta })
   });
 
-  const { data: informeVentas, isLoading: loadingVentas } = useQuery({
-    queryKey: ['informe-ventas', fechaDesde, fechaHasta],
-    queryFn: () => informesService.getInformeVentas({ desde: fechaDesde, hasta: fechaHasta }),
-    enabled: tipoInforme === 'ventas'
+  const { data: alumnosActivos } = useQuery({
+    queryKey: ['informes', 'alumnos-activos', fechaDesde, fechaHasta],
+    queryFn: () => informesService.getInformeIngresos({ desde: fechaDesde, hasta: fechaHasta })
   });
 
-  const isLoading = loadingCobros || loadingIngresos || loadingMapaCalor || loadingVentas;
+  const { data: clasesPopulares } = useQuery({
+    queryKey: ['informes', 'clases-populares', fechaDesde, fechaHasta],
+    queryFn: () => informesService.getMapaCalor({ desde: fechaDesde, hasta: fechaHasta })
+  });
 
-  const generarReportePdf = async () => {
+  const { data: productosVendidos } = useQuery({
+    queryKey: ['informes', 'productos-vendidos', fechaDesde, fechaHasta],
+    queryFn: () => informesService.getInformeVentas({ desde: fechaDesde, hasta: fechaHasta })
+  });
+
+  const handleExportar = async (tipo: string) => {
     try {
-      const blob = await informesService.generarReportePdf({
-        tipo: tipoInforme,
+      const response = await informesService.generarReportePdf({
+        tipo,
         desde: fechaDesde,
-        hasta: fechaHasta,
+        hasta: fechaHasta
       });
-      const url = window.URL.createObjectURL(blob);
+      const url = window.URL.createObjectURL(new Blob([response]));
       const link = document.createElement('a');
       link.href = url;
-      link.download = `informe-${tipoInforme}-${fechaDesde}-${fechaHasta}.pdf`;
+      link.setAttribute('download', `informe-${tipo}-${new Date().toISOString().split('T')[0]}.pdf`);
+      document.body.appendChild(link);
       link.click();
-      window.URL.revokeObjectURL(url);
+      link.remove();
+      addToast({
+        type: 'success',
+        title: 'Informe exportado',
+        message: 'El informe se ha descargado correctamente',
+      });
     } catch (error) {
-      console.error('Error generando reporte:', error);
+      addToast({
+        type: 'error',
+        title: 'Error',
+        message: 'Error al exportar el informe',
+      });
     }
-  };
-
-  const renderInformeCobros = () => {
-    if (!informeCobros) return null;
-
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="kpi-card">
-            <p className="text-sm font-medium text-gray-600">Total Recaudado</p>
-            <p className="text-2xl font-bold text-success">
-              ${informeCobros.totalRecaudado?.toLocaleString('es-AR')}
-            </p>
-          </div>
-          <div className="kpi-card">
-            <p className="text-sm font-medium text-gray-600">Cobros Realizados</p>
-            <p className="text-2xl font-bold">{informeCobros.totalCobros}</p>
-          </div>
-          <div className="kpi-card">
-            <p className="text-sm font-medium text-gray-600">Promedio por Cobro</p>
-            <p className="text-2xl font-bold">
-              ${informeCobros.promedioCobro?.toLocaleString('es-AR')}
-            </p>
-          </div>
-          <div className="kpi-card">
-            <p className="text-sm font-medium text-gray-600">Días con Cobros</p>
-            <p className="text-2xl font-bold">{informeCobros.diasConCobros}</p>
-          </div>
-        </div>
-
-        {/* Gráfico simplificado */}
-        <div className="kpi-card">
-          <h3 className="text-lg font-semibold mb-4">Cobros por Día</h3>
-          <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-            <p className="text-gray-500">Gráfico de cobros por día</p>
-          </div>
-        </div>
-
-        {/* Métodos de pago */}
-        <div className="kpi-card">
-          <h3 className="text-lg font-semibold mb-4">Distribución por Método de Pago</h3>
-          <div className="space-y-2">
-            {informeCobros.metodosPago?.map((metodo: any) => (
-              <div key={metodo.metodo} className="flex justify-between items-center">
-                <span className="capitalize">{metodo.metodo.toLowerCase()}</span>
-                <div className="flex items-center gap-4">
-                  <div className="w-32 bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-primary-500 h-2 rounded-full"
-                      style={{ width: `${(metodo.monto / informeCobros.totalRecaudado) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-medium w-20 text-right">
-                    ${metodo.monto.toLocaleString('es-AR')}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderMapaCalor = () => {
-    if (!mapaCalor) return null;
-
-    const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-    const horas = Array.from({ length: 14 }, (_, i) => i + 8); // 8:00 a 21:00
-
-    const getColorIntensity = (count: number, maxCount: number) => {
-      if (count === 0) return 'bg-gray-100';
-      const intensity = Math.floor((count / maxCount) * 5);
-      const colors = [
-        'bg-green-100',
-        'bg-green-200',
-        'bg-green-300',
-        'bg-green-400',
-        'bg-green-500',
-        'bg-green-600',
-      ];
-      return colors[Math.min(intensity, 5)];
-    };
-
-    const maxCount = Math.max(...mapaCalor.data.map((item: any) => item.count));
-
-    return (
-      <div className="space-y-6">
-        <div className="kpi-card">
-          <h3 className="text-lg font-semibold mb-4">Mapa de Calor - Asistencia por Horario</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr>
-                  <th className="p-2 text-sm font-medium text-gray-600">Hora/Día</th>
-                  {dias.map(dia => (
-                    <th key={dia} className="p-2 text-sm font-medium text-gray-600 text-center">
-                      {dia}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {horas.map(hora => (
-                  <tr key={hora}>
-                    <td className="p-2 text-sm font-medium text-gray-600 text-center">
-                      {hora}:00
-                    </td>
-                    {dias.map((dia, diaIndex) => {
-                      const data = mapaCalor.data.find(
-                        (item: any) => item.dia === dia && item.hora === `${hora}:00`
-                      );
-                      const count = data?.count || 0;
-                      return (
-                        <td
-                          key={diaIndex}
-                          className={`p-2 text-center text-xs ${getColorIntensity(count, maxCount)} ${
-                            count > 0 ? 'text-white' : 'text-gray-400'
-                          }`}
-                          title={`${dia} ${hora}:00 - ${count} asistencias`}
-                        >
-                          {count > 0 ? count : '-'}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="kpi-card">
-            <p className="text-sm font-medium text-gray-600">Hora Pico</p>
-            <p className="text-xl font-bold">{mapaCalor.horaPico?.hora || '-'}</p>
-            <p className="text-sm text-gray-500">{mapaCalor.horaPico?.count || 0} asistencias</p>
-          </div>
-          <div className="kpi-card">
-            <p className="text-sm font-medium text-gray-600">Día Más Concurrido</p>
-            <p className="text-xl font-bold">{mapaCalor.diaPico?.dia || '-'}</p>
-            <p className="text-sm text-gray-500">{mapaCalor.diaPico?.count || 0} asistencias</p>
-          </div>
-          <div className="kpi-card">
-            <p className="text-sm font-medium text-gray-600">Promedio Diario</p>
-            <p className="text-xl font-bold">{mapaCalor.promedioDiario || 0}</p>
-            <p className="text-sm text-gray-500">asistencias por día</p>
-          </div>
-        </div>
-      </div>
-    );
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Informes y Analytics</h1>
-        <Button onClick={generarReportePdf} disabled={isLoading}>
-          Exportar PDF
-        </Button>
+        <h1 className="text-2xl font-bold text-gray-900">Informes y Reportes</h1>
       </div>
 
-      {/* Filtros */}
-      <div className="kpi-card">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Tipo de Informe
-            </label>
-            <select
-              value={tipoInforme}
-              onChange={(e) => setTipoInforme(e.target.value as any)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            >
-              <option value="cobros">Cobros y Pagos</option>
-              <option value="ingresos">Ingresos</option>
-              <option value="asistencia">Asistencia</option>
-              <option value="ventas">Ventas de Productos</option>
-            </select>
-          </div>
+      {/* Filtros de Fecha */}
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <h2 className="text-lg font-semibold mb-4">Filtros de Período</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Fecha Desde
@@ -259,42 +106,151 @@ const Informes: React.FC = () => {
           <div className="flex items-end">
             <Button
               onClick={() => {
-                // Re-fetch data
+                // Refetch all queries
                 window.location.reload();
               }}
               className="w-full"
             >
-              Aplicar Filtros
+              Actualizar
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Contenido del Informe */}
-      <div>
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
-              <span className="text-gray-600">Generando informe...</span>
-            </div>
+      {/* KPIs de Resumen */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="kpi-card">
+          <p className="text-sm font-medium text-gray-600">Ingresos Totales</p>
+          <p className="text-2xl font-bold text-success">
+            ${ingresosMensuales?.total?.toLocaleString('es-AR') || '0'}
+          </p>
+        </div>
+
+        <div className="kpi-card">
+          <p className="text-sm font-medium text-gray-600">Asistencias Totales</p>
+          <p className="text-2xl font-bold text-blue-600">
+            {asistencias?.total || 0}
+          </p>
+        </div>
+
+        <div className="kpi-card">
+          <p className="text-sm font-medium text-gray-600">Alumnos Activos</p>
+          <p className="text-2xl font-bold text-purple-600">
+            {alumnosActivos?.total || 0}
+          </p>
+        </div>
+
+        <div className="kpi-card">
+          <p className="text-sm font-medium text-gray-600">Productos Vendidos</p>
+          <p className="text-2xl font-bold text-orange-600">
+            {productosVendidos?.total || 0}
+          </p>
+        </div>
+      </div>
+
+      {/* Gráficos y Detalles */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Ingresos por Método de Pago */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Ingresos por Método de Pago</h3>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => handleExportar('ingresos-metodo')}
+            >
+              Exportar
+            </Button>
           </div>
-        ) : (
-          <>
-            {tipoInforme === 'cobros' && renderInformeCobros()}
-            {tipoInforme === 'asistencia' && renderMapaCalor()}
-            {tipoInforme === 'ingresos' && (
-              <div className="text-center py-12">
-                <p className="text-gray-500">Informe de ingresos en desarrollo...</p>
+          <div className="space-y-3">
+            {pagosPorMetodo?.data?.map((metodo: any) => (
+              <div key={metodo.metodo} className="flex justify-between items-center">
+                <span className="text-sm font-medium">{metodo.metodo}</span>
+                <span className="text-sm font-semibold text-success">
+                  ${metodo.total.toLocaleString('es-AR')}
+                </span>
               </div>
+            )) || (
+              <p className="text-gray-500 text-sm">No hay datos disponibles</p>
             )}
-            {tipoInforme === 'ventas' && (
-              <div className="text-center py-12">
-                <p className="text-gray-500">Informe de ventas en desarrollo...</p>
+          </div>
+        </div>
+
+        {/* Clases Más Populares */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Clases Más Populares</h3>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => handleExportar('clases-populares')}
+            >
+              Exportar
+            </Button>
+          </div>
+          <div className="space-y-3">
+            {clasesPopulares?.data?.slice(0, 5).map((clase: any) => (
+              <div key={clase.id} className="flex justify-between items-center">
+                <span className="text-sm font-medium">{clase.nombre}</span>
+                <span className="text-sm text-gray-600">{clase.inscripciones} inscritos</span>
               </div>
+            )) || (
+              <p className="text-gray-500 text-sm">No hay datos disponibles</p>
             )}
-          </>
-        )}
+          </div>
+        </div>
+      </div>
+
+      {/* Productos Más Vendidos */}
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Productos Más Vendidos</h3>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => handleExportar('productos-vendidos')}
+          >
+            Exportar
+          </Button>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Producto
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Cantidad Vendida
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Ingresos Totales
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {productosVendidos?.data?.map((producto: any) => (
+                <tr key={producto.id}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {producto.nombre}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {producto.cantidad}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-success font-semibold">
+                    ${producto.total.toLocaleString('es-AR')}
+                  </td>
+                </tr>
+              )) || (
+                <tr>
+                  <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
+                    No hay datos disponibles
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

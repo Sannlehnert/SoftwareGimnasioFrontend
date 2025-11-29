@@ -5,6 +5,10 @@ import DataTable from '../../components/ui/DataTable';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import { useToast } from '../../context/ToastProvider';
+import NuevaClaseForm from '../../components/forms/NuevaClaseForm';
+import EditarClaseForm from '../../components/forms/EditarClaseForm';
+import NuevoTurnoForm from '../../components/forms/NuevoTurnoForm';
+import EditarTurnoForm from '../../components/forms/EditarTurnoForm';
 
 const Turnos: React.FC = () => {
   const queryClient = useQueryClient();
@@ -12,7 +16,10 @@ const Turnos: React.FC = () => {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAsistenciaModalOpen, setIsAsistenciaModalOpen] = useState(false);
+  const [isEditarClaseModalOpen, setIsEditarClaseModalOpen] = useState(false);
+  const [isEditarTurnoModalOpen, setIsEditarTurnoModalOpen] = useState(false);
   const [selectedTurno, setSelectedTurno] = useState<any>(null);
+  const [selectedClase, setSelectedClase] = useState<any>(null);
   const [activeView, setActiveView] = useState<'turnos' | 'clases'>('turnos');
 
   const { data: turnos, isLoading: loadingTurnos } = useQuery({
@@ -47,6 +54,26 @@ const Turnos: React.FC = () => {
         type: 'error',
         title: 'Error',
         message: error.response?.data?.message || 'Error al crear el turno',
+      });
+    },
+  });
+
+  const createClaseMutation = useMutation({
+    mutationFn: turnosService.createClase,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clases'] });
+      setIsModalOpen(false);
+      addToast({
+        type: 'success',
+        title: 'Clase creada',
+        message: 'La clase se ha creado correctamente',
+      });
+    },
+    onError: (error: any) => {
+      addToast({
+        type: 'error',
+        title: 'Error',
+        message: error.response?.data?.message || 'Error al crear la clase',
       });
     },
   });
@@ -112,6 +139,70 @@ const Turnos: React.FC = () => {
     setIsAsistenciaModalOpen(true);
   };
 
+  const handleEditarClase = (clase: any) => {
+    setSelectedClase(clase);
+    setIsEditarClaseModalOpen(true);
+  };
+
+  const handleEditarTurno = (turno: any) => {
+    setSelectedTurno(turno);
+    setIsEditarTurnoModalOpen(true);
+  };
+
+  const updateClaseMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<any> }) =>
+      turnosService.updateClase(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clases'] });
+      addToast({
+        type: 'success',
+        title: 'Clase actualizada',
+        message: 'La clase se ha actualizado correctamente',
+      });
+    },
+    onError: (error: any) => {
+      addToast({
+        type: 'error',
+        title: 'Error',
+        message: error.response?.data?.message || 'Error al actualizar la clase',
+      });
+    },
+  });
+
+  const updateTurnoMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<any> }) =>
+      turnosService.updateTurno(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['turnos'] });
+      setIsEditarTurnoModalOpen(false);
+      addToast({
+        type: 'success',
+        title: 'Turno actualizado',
+        message: 'El turno se ha actualizado correctamente',
+      });
+    },
+    onError: (error: any) => {
+      addToast({
+        type: 'error',
+        title: 'Error',
+        message: error.response?.data?.message || 'Error al actualizar el turno',
+      });
+    },
+  });
+
+  const handleDesactivarClase = async (clase: any) => {
+    if (window.confirm(`¿Estás seguro de que quieres ${clase.activo ? 'desactivar' : 'activar'} la clase "${clase.nombre}"?`)) {
+      try {
+        await updateClaseMutation.mutateAsync({
+          id: clase.id,
+          data: { activo: !clase.activo }
+        });
+      } catch (error) {
+        // Error handled by mutation
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -130,7 +221,7 @@ const Turnos: React.FC = () => {
             Clases
           </Button>
           <Button onClick={() => setIsModalOpen(true)}>
-            Nuevo Turno
+            {activeView === 'turnos' ? 'Nuevo Turno' : 'Nueva Clase'}
           </Button>
         </div>
       </div>
@@ -149,7 +240,11 @@ const Turnos: React.FC = () => {
               >
                 Asistencia
               </Button>
-              <Button size="sm" variant="secondary">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => handleEditarTurno(row)}
+              >
                 Editar
               </Button>
             </div>
@@ -158,17 +253,56 @@ const Turnos: React.FC = () => {
       )}
 
       {activeView === 'clases' && (
-        <DataTable
-          columns={clasesColumns}
-          data={clases || []}
-          loading={loadingClases}
-          searchable={true}
-          actions={(row) => (
-            <Button size="sm" variant="secondary">
-              Editar
-            </Button>
-          )}
-        />
+        <div className="space-y-6">
+          <DataTable
+            columns={clasesColumns}
+            data={clases || []}
+            loading={loadingClases}
+            searchable={true}
+            actions={(row) => (
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => handleEditarClase(row)}
+                >
+                  Editar
+                </Button>
+                <Button
+                  size="sm"
+                  variant={row.activo ? "danger" : "warning"}
+                  onClick={() => handleDesactivarClase(row)}
+                >
+                  {row.activo ? "Desactivar" : "Activar"}
+                </Button>
+              </div>
+            )}
+          />
+
+          {/* Estadísticas de Clases */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Total Clases</h3>
+              <p className="text-3xl font-bold text-primary-600">{clases?.length || 0}</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Clases Activas</h3>
+              <p className="text-3xl font-bold text-success">{clases?.filter((c: any) => c.activo).length || 0}</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Capacidad Total</h3>
+              <p className="text-3xl font-bold text-blue-600">
+                {clases?.reduce((acc: number, c: any) => acc + c.capacidad, 0) || 0}
+              </p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Instructores</h3>
+              <p className="text-3xl font-bold text-purple-600">
+                {new Set(clases?.flatMap((c: any) => c.instructores)).size || 0}
+              </p>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Modal de Asistencia */}
@@ -258,37 +392,68 @@ const Turnos: React.FC = () => {
         )}
       </Modal>
 
-      {/* Modal Nuevo Turno */}
+      {/* Modal Nuevo Turno/Clase */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Crear Nuevo Turno"
+        title={activeView === 'turnos' ? "Crear Nuevo Turno" : "Crear Nueva Clase"}
       >
-        <div className="space-y-4">
-          <p className="text-gray-600">Funcionalidad de creación de turnos en desarrollo...</p>
-          <div className="flex gap-2 pt-4">
-            <Button
-              variant="secondary"
-              onClick={() => setIsModalOpen(false)}
-              className="flex-1"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={() => {
-                setIsModalOpen(false);
-                addToast({
-                  type: 'info',
-                  title: 'En desarrollo',
-                  message: 'Esta funcionalidad estará disponible pronto',
-                });
-              }}
-              className="flex-1"
-            >
-              Crear
-            </Button>
-          </div>
-        </div>
+        {activeView === 'turnos' ? (
+          <NuevoTurnoForm
+            onClose={() => setIsModalOpen(false)}
+            onSubmit={(turnoData: Parameters<typeof turnosService.createTurno>[0]) => createTurnoMutation.mutate(turnoData)}
+            isLoading={createTurnoMutation.isPending}
+          />
+        ) : (
+          <NuevaClaseForm
+            onClose={() => setIsModalOpen(false)}
+            onSubmit={(claseData: Parameters<typeof turnosService.createClase>[0]) => createClaseMutation.mutate(claseData)}
+            isLoading={createClaseMutation.isPending}
+          />
+        )}
+      </Modal>
+
+      {/* Modal Editar Clase */}
+      <Modal
+        isOpen={isEditarClaseModalOpen}
+        onClose={() => setIsEditarClaseModalOpen(false)}
+        title="Editar Clase"
+      >
+        {selectedClase && (
+          <EditarClaseForm
+            clase={selectedClase}
+            onClose={() => setIsEditarClaseModalOpen(false)}
+            onSubmit={(claseData: Partial<any>) => {
+              updateClaseMutation.mutate({
+                id: selectedClase.id,
+                data: claseData
+              });
+              setIsEditarClaseModalOpen(false);
+            }}
+            isLoading={updateClaseMutation.isPending}
+          />
+        )}
+      </Modal>
+
+      {/* Modal Editar Turno */}
+      <Modal
+        isOpen={isEditarTurnoModalOpen}
+        onClose={() => setIsEditarTurnoModalOpen(false)}
+        title="Editar Turno"
+      >
+        {selectedTurno && (
+          <EditarTurnoForm
+            turno={selectedTurno}
+            onClose={() => setIsEditarTurnoModalOpen(false)}
+            onSubmit={(turnoData: Partial<any>) => {
+              updateTurnoMutation.mutate({
+                id: selectedTurno.id,
+                data: turnoData
+              });
+            }}
+            isLoading={updateTurnoMutation.isPending}
+          />
+        )}
       </Modal>
     </div>
   );
