@@ -13,6 +13,7 @@ import Rutinas from './pages/Admin/Rutinas';
 import Turnos from './pages/Admin/Turnos';
 import Caja from './pages/Admin/Caja';
 import Productos from './pages/Admin/Productos';
+
 import Informes from './pages/Admin/Informes';
 import PantallaAcceso from './pages/Admin/PantallaAcceso';
 import Configuracion from './pages/Admin/Configuracion';
@@ -20,11 +21,14 @@ import NuevoPago from './pages/Admin/NuevoPago';
 import NuevaRutina from './pages/Admin/NuevaRutina';
 import CuentaCorriente from './pages/Admin/CuentaCorriente';
 import Clases from './pages/Admin/Clases';
+import AlumnoInicio from './pages/Alumno/Inicio';
+import Nutricion from './pages/Admin/Nutricion';
+import Medidas from './pages/Admin/Medidas';
+import Asistencia from './pages/Admin/Asistencia';
 
 // Alumno Pages
-import AlumnoInicio from './pages/Alumno/Inicio';
 // import AlumnoRutina from './pages/Alumno/Rutina';
-// import AlumnoTurnos from './pages/Alumno/Turnos';
+import AlumnoTurnos from './pages/Alumno/Turnos';
 // import AlumnoPagos from './pages/Alumno/Pagos';
 
 const Router = () => {
@@ -60,9 +64,14 @@ const Router = () => {
           <Route path="rutinas" element={<Rutinas />} />
           <Route path="rutinas/nueva" element={<NuevaRutina />} />
           <Route path="turnos" element={<Turnos />} />
+          <Route path="turnos-alumno" element={<AlumnoTurnos />} />
           <Route path="clases" element={<Clases />} />
+          <Route path="nutricion" element={<Nutricion />} />
+          <Route path="medidas" element={<Medidas />} />
+          <Route path="asistencia" element={<Asistencia />} />
           <Route path="caja" element={<Caja />} />
           <Route path="productos" element={<Productos />} />
+
           <Route path="informes" element={<Informes />} />
           <Route path="cuenta-corriente" element={<CuentaCorriente />} />
           <Route path="pantalla-acceso" element={<PantallaAcceso />} />
