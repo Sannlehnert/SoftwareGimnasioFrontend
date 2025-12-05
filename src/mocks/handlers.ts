@@ -220,7 +220,7 @@ export const handlers = [
 
   http.get('/api/v1/auth/me', ({ request }) => {
     const authHeader = request.headers.get('Authorization');
-    if (authHeader?.includes('mock-admin-token')) {
+    if (authHeader?.includes('Bearer mock-admin-token')) {
       return HttpResponse.json({
         id: 1,
         nombre: 'Administrador',
@@ -229,7 +229,7 @@ export const handlers = [
       });
     }
 
-    if (authHeader?.includes('mock-alumno-token')) {
+    if (authHeader?.includes('Bearer mock-alumno-token')) {
       return HttpResponse.json({
         id: 100,
         nombre: 'Juan Alumno',

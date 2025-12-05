@@ -61,7 +61,7 @@ const PantallaAcceso: React.FC = () => {
         title: 'Error',
         message: error.response?.data?.message || 'Error de conexión',
       });
-      speak('Error de conexión. Intente nuevamente.');
+      speak('DNI no encontrado. Intente nuevamente.');
       throw error;
     } finally {
       setIsProcessing(false);
@@ -163,7 +163,7 @@ const PantallaAcceso: React.FC = () => {
                 {voiceEnabled ? '🔊 Voz Activada' : '🔇 Voz Desactivada'}
               </button>
               <button
-                onClick={() => speak('Sistema de voz funcionando correctamente')}
+                onClick={() => speak('Sistema de control de acceso funcionando correctamente')}
                 className="px-4 py-2 bg-blue-500/20 text-blue-400 border border-blue-400 rounded-lg font-semibold hover:bg-blue-500/30 transition-colors"
               >
                 Probar Voz

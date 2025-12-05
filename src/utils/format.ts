@@ -6,24 +6,42 @@ export const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
-export const formatDate = (date: string | Date, includeTime: boolean = false): string => {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
-  if (includeTime) {
-    return dateObj.toLocaleString('es-AR', {
+export const formatDate = (date: string | Date | undefined | null, includeTime: boolean = false): string => {
+  if (!date) return '-';
+
+  try {
+    let dateObj: Date;
+
+    if (typeof date === 'string') {
+      dateObj = new Date(date);
+    } else if (date instanceof Date) {
+      dateObj = date;
+    } else {
+      return '-';
+    }
+
+    // Check if date is valid
+    if (isNaN(dateObj.getTime())) return '-';
+
+    if (includeTime) {
+      return dateObj.toLocaleString('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+
+    return dateObj.toLocaleDateString('es-AR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
     });
+  } catch (error) {
+    console.warn('Error formatting date:', date, error);
+    return '-';
   }
-  
-  return dateObj.toLocaleDateString('es-AR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
 };
 
 export const formatDNI = (dni: string): string => {

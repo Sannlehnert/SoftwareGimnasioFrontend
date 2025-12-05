@@ -16,6 +16,7 @@ export interface RutinaEjercicio {
   repeticiones: number;
   descanso: number; // segundos
   notas?: string;
+  dia?: number; // día de la semana (1-7)
 }
 
 export interface Rutina {

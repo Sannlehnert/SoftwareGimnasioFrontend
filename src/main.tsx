@@ -30,7 +30,7 @@ initMSW();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <QueryClientProvider client={queryClient}>
         <I18nextProvider i18n={i18n}>
           <App />
