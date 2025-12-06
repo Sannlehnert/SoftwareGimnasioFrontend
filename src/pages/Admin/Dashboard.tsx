@@ -24,7 +24,8 @@ const Dashboard: React.FC = () => {
       trend: 'up',
       icon: '👥',
       color: 'primary',
-      description: 'Total de miembros con cuota al día'
+      description: 'Total de miembros con cuota al día',
+      action: 'alumnos'
     },
     {
       title: 'Ingresos del Mes',
@@ -33,7 +34,8 @@ const Dashboard: React.FC = () => {
       trend: 'up',
       icon: '💰',
       color: 'success',
-      description: 'Recaudación mensual actual'
+      description: 'Recaudación mensual actual',
+      action: 'informes'
     },
     {
       title: 'Clases Hoy',
@@ -42,7 +44,8 @@ const Dashboard: React.FC = () => {
       trend: 'neutral',
       icon: '🎯',
       color: 'warning',
-      description: 'Actividades programadas para hoy'
+      description: 'Actividades programadas para hoy',
+      action: 'turnos'
     },
     {
       title: 'Asistencia Promedio',
@@ -51,7 +54,8 @@ const Dashboard: React.FC = () => {
       trend: 'up',
       icon: '📊',
       color: 'accent',
-      description: 'Promedio de asistencia semanal'
+      description: 'Promedio de asistencia semanal',
+      action: 'asistencia'
     }
   ];
 
@@ -97,37 +101,57 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-neutral-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-display bg-gradient-primary bg-clip-text text-transparent mb-2">
+        <header className="mb-8" role="banner">
+          <h1 className="text-4xl font-bold text-display bg-gradient-primary bg-clip-text text-transparent mb-3 leading-tight">
             ¡Bienvenido de vuelta, {user?.nombre?.split(' ')[0]}! 👋
           </h1>
-          <p className="text-neutral-600 text-lg">
+          <p className="text-neutral-600 text-xl leading-relaxed">
             Aquí tienes un resumen del estado de tu gimnasio
           </p>
-        </div>
+        </header>
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {kpiData.map((kpi, index) => (
-            <div key={index} className="kpi-card animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
-              <div className="flex items-center justify-between mb-4">
-                <div className={`w-12 h-12 bg-${kpi.color}-100 rounded-xl flex items-center justify-center`}>
-                  <span className="text-2xl">{kpi.icon}</span>
+            <div
+              key={index}
+              className="kpi-card animate-fade-in group cursor-pointer hover:shadow-lg transition-all duration-300"
+              style={{ animationDelay: `${index * 100}ms` }}
+              role="button"
+              tabIndex={0}
+              aria-labelledby={`kpi-title-${index}`}
+              aria-describedby={`kpi-description-${index} kpi-tooltip-${index}`}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate(`/${kpi.action}`);
+                }
+              }}
+              onClick={() => {
+                navigate(`/${kpi.action}`);
+              }}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className={`w-16 h-16 bg-gradient-to-br from-${kpi.color}-100 to-${kpi.color}-200 rounded-2xl flex items-center justify-center shadow-soft group-hover:shadow-md transition-shadow`}>
+                  <span className="text-4xl" role="img" aria-label={kpi.title}>{kpi.icon}</span>
                 </div>
-                <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
-                  kpi.trend === 'up' ? 'bg-success-100 text-success-800' :
-                  kpi.trend === 'down' ? 'bg-error-100 text-error-800' :
-                  'bg-neutral-100 text-neutral-800'
+                <div className={`flex items-center gap-1 px-4 py-2 rounded-full text-base font-semibold shadow-soft ${
+                  kpi.trend === 'up' ? 'bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border border-green-200' :
+                  kpi.trend === 'down' ? 'bg-gradient-to-r from-red-50 to-rose-50 text-red-700 border border-red-200' :
+                  'bg-gradient-to-r from-gray-50 to-slate-50 text-gray-700 border border-gray-200'
                 }`}>
-                  {kpi.trend === 'up' && <span>↗️</span>}
-                  {kpi.trend === 'down' && <span>↘️</span>}
-                  {kpi.trend === 'neutral' && <span>→</span>}
-                  {kpi.change}
+                  {kpi.trend === 'up' && <span aria-hidden="true">↗️</span>}
+                  {kpi.trend === 'down' && <span aria-hidden="true">↘️</span>}
+                  {kpi.trend === 'neutral' && <span aria-hidden="true">→</span>}
+                  <span>{kpi.change}</span>
                 </div>
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-neutral-900 mb-1">{kpi.value}</h3>
-                <p className="text-sm text-neutral-600">{kpi.title}</p>
+                <h3 id={`kpi-title-${index}`} className="text-4xl font-bold text-neutral-900 mb-3 leading-tight">{kpi.value}</h3>
+                <p id={`kpi-description-${index}`} className="text-lg text-neutral-700 font-semibold mb-2">{kpi.title}</p>
+                <div id={`kpi-tooltip-${index}`} className="text-sm text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  {kpi.description}
+                </div>
               </div>
             </div>
           ))}

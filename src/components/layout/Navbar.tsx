@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useOffline } from '../../hooks/useOffline';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface NavbarProps {
   onMenuClick: () => void;
@@ -10,12 +10,18 @@ interface NavbarProps {
   showMenu?: boolean;
 }
 
+interface BreadcrumbItem {
+  label: string;
+  path: string;
+}
+
 const Navbar: React.FC<NavbarProps> = ({ onMenuClick, user, onLogout, showMenu = true }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const isOffline = useOffline();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const getRolDisplay = (rol: string) => {
     const roles: { [key: string]: string } = {
@@ -36,7 +42,22 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick, user, onLogout, showMenu =
       .slice(0, 2);
   };
 
+  const getBreadcrumbs = (): BreadcrumbItem[] => {
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const breadcrumbs: BreadcrumbItem[] = [{ label: 'Inicio', path: '/' }];
+
+    let currentPath = '';
+    pathSegments.forEach((segment) => {
+      currentPath += `/${segment}`;
+      const label = segment.charAt(0).toUpperCase() + segment.slice(1).replace('-', ' ');
+      breadcrumbs.push({ label, path: currentPath });
+    });
+
+    return breadcrumbs;
+  };
+
   return (
+    <React.Fragment>
     <header className="bg-white/90 backdrop-blur-xl shadow-soft border-b border-neutral-200/50 relative z-50">
       <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center">
@@ -253,6 +274,35 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick, user, onLogout, showMenu =
         </div>
       )}
     </header>
+
+    {/* Breadcrumbs */ }
+    <nav className="bg-white/50 backdrop-blur-sm border-b border-neutral-200/30 px-6 py-3">
+      <div className="flex items-center space-x-2 text-sm">
+        {getBreadcrumbs().map((crumb, index) => {
+          const breadcrumbs = getBreadcrumbs();
+          const isLast = index === breadcrumbs.length - 1;
+          return (
+            <React.Fragment key={crumb.path}>
+              {index > 0 && (
+                <svg className="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              )}
+              <button
+                onClick={() => navigate(crumb.path)}
+                className={`hover:text-primary-600 transition-colors ${isLast
+                    ? 'text-primary-700 font-medium'
+                    : 'text-neutral-600'
+                  }`}
+              >
+                {crumb.label}
+              </button>
+            </React.Fragment>
+          );
+        })}
+      </div>
+    </nav>
+    </React.Fragment>
   );
 };
 

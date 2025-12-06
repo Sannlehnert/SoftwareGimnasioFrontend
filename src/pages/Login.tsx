@@ -72,7 +72,6 @@ const Login: React.FC = () => {
             <h1 className="text-3xl font-bold text-display bg-gradient-primary bg-clip-text text-transparent mb-2">
               MC GYM
             </h1>
-            <p className="text-neutral-600 font-medium">Sistema de gestión integral</p>
           </div>
 
           {error && (
@@ -164,15 +163,6 @@ const Login: React.FC = () => {
               )}
             </button>
           </form>
-
-          <div className="mt-8 text-center">
-            <p className="text-sm text-neutral-500">
-              ¿Problemas para acceder?
-              <button className="ml-1 text-primary-600 hover:text-primary-700 font-semibold transition-colors hover:underline">
-                Contacta al administrador
-              </button>
-            </p>
-          </div>
 
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-neutral-200/50">

@@ -192,23 +192,32 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ isOpen, onClose }) => {
         <div key={item.label} className="mb-2">
           <button
             onClick={() => toggleMenu(item.label)}
-            className="flex items-center w-full px-4 py-3 text-left text-neutral-700 hover:bg-primary-50 hover:text-primary-700 transition-all duration-200 rounded-xl group"
+            className="flex items-center w-full px-4 py-5 text-left text-neutral-700 hover:bg-primary-50 hover:text-primary-700 transition-all duration-200 rounded-xl group focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+            title={`Expandir menú ${item.label}`}
+            aria-expanded={isExpanded}
+            aria-controls={`submenu-${item.label.replace(/\s+/g, '-').toLowerCase()}`}
           >
-            <span className="mr-3 text-neutral-500 group-hover:text-primary-600 transition-colors">
+            <span className="mr-4 text-neutral-500 group-hover:text-primary-600 transition-colors text-2xl" aria-hidden="true">
               {item.icon}
             </span>
-            <span className="flex-1 font-medium">{item.label}</span>
+            <span className="flex-1 font-medium text-lg">{item.label}</span>
             <svg
-              className={`w-5 h-5 text-neutral-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+              className={`w-6 h-6 text-neutral-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
           {isExpanded && (
-            <div className="ml-8 mt-2 space-y-1 animate-slide-in">
+            <div
+              id={`submenu-${item.label.replace(/\s+/g, '-').toLowerCase()}`}
+              className="ml-8 mt-2 space-y-1 animate-slide-in"
+              role="region"
+              aria-label={`Submenú ${item.label}`}
+            >
               {item.submenu.map((subItem: any) => (
                 <button
                   key={subItem.path}
@@ -216,11 +225,14 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ isOpen, onClose }) => {
                     navigate(subItem.path);
                     onClose();
                   }}
-                  className={`w-full text-left px-4 py-2 text-sm rounded-lg transition-all duration-200 ${
+                  className={`w-full text-left px-4 py-3 text-base rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
                     isActive(subItem.path)
                       ? 'bg-primary-100 text-primary-700 shadow-soft border border-primary-200'
                       : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
                   }`}
+                  title={`Ir a ${subItem.label}`}
+                  aria-current={isActive(subItem.path) ? 'page' : undefined}
+                  role="menuitem"
                 >
                   {subItem.label}
                 </button>
@@ -238,16 +250,19 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ isOpen, onClose }) => {
           navigate(item.path);
           onClose();
         }}
-        className={`flex items-center w-full px-4 py-3 mb-1 rounded-xl transition-all duration-200 group ${
+        className={`flex items-center w-full px-4 py-5 mb-1 rounded-xl transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
           isActive(item.path)
             ? 'bg-primary-100 text-primary-700 shadow-soft border border-primary-200'
             : 'text-neutral-700 hover:bg-primary-50 hover:text-primary-700'
         }`}
+        title={`Ir a ${item.label}`}
+        aria-current={isActive(item.path) ? 'page' : undefined}
+        role="menuitem"
       >
-        <span className="mr-3 text-neutral-500 group-hover:text-primary-600 transition-colors">
+        <span className="mr-4 text-neutral-500 group-hover:text-primary-600 transition-colors text-2xl" aria-hidden="true">
           {item.icon}
         </span>
-        <span className="font-medium">{item.label}</span>
+        <span className="font-medium text-lg">{item.label}</span>
       </button>
     );
   };

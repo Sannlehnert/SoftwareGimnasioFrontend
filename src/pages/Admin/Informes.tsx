@@ -43,6 +43,14 @@ const Informes: React.FC = () => {
     queryFn: () => informesService.getInformeVentas({ desde: fechaDesde, hasta: fechaHasta })
   });
 
+  // Calcular totales
+  const totalIngresos = ingresosMensuales?.data?.reduce((sum: number, item: any) => sum + item.monto, 0) || 0;
+  const totalAsistencias = asistencias?.data?.reduce((sum: number, item: any) =>
+    sum + Object.values(item).filter((val: any) => typeof val === 'number').reduce((a: number, b: number) => a + b, 0), 0
+  ) || 0;
+  const totalAlumnos = alumnosActivos?.total || 0;
+  const totalProductos = productosVendidos?.data?.reduce((sum: number, item: any) => sum + item.cantidad, 0) || 0;
+
   const handleExportar = async (tipo: string) => {
     try {
       const response = await informesService.generarReportePdf({
@@ -119,31 +127,31 @@ const Informes: React.FC = () => {
 
       {/* KPIs de Resumen */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="kpi-card">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <p className="text-sm font-medium text-gray-600">Ingresos Totales</p>
           <p className="text-2xl font-bold text-success">
-            ${ingresosMensuales?.total?.toLocaleString('es-AR') || '0'}
+            ${totalIngresos.toLocaleString('es-AR')}
           </p>
         </div>
 
-        <div className="kpi-card">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <p className="text-sm font-medium text-gray-600">Asistencias Totales</p>
           <p className="text-2xl font-bold text-blue-600">
-            {asistencias?.total || 0}
+            {totalAsistencias}
           </p>
         </div>
 
-        <div className="kpi-card">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <p className="text-sm font-medium text-gray-600">Alumnos Activos</p>
           <p className="text-2xl font-bold text-purple-600">
-            {alumnosActivos?.total || 0}
+            {totalAlumnos}
           </p>
         </div>
 
-        <div className="kpi-card">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <p className="text-sm font-medium text-gray-600">Productos Vendidos</p>
           <p className="text-2xl font-bold text-orange-600">
-            {productosVendidos?.total || 0}
+            {totalProductos}
           </p>
         </div>
       </div>

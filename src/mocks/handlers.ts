@@ -1195,8 +1195,21 @@ startxref
       filtered = filtered.filter(cobro => new Date(cobro.fecha) <= new Date(hasta));
     }
 
+    // Agrupar por método de pago para el resumen
+    const resumenPorMetodo = filtered.reduce((acc: any, cobro) => {
+      const metodo = cobro.metodoPago;
+      if (!acc[metodo]) {
+        acc[metodo] = { metodo, total: 0, count: 0 };
+      }
+      acc[metodo].total += cobro.monto;
+      acc[metodo].count += 1;
+      return acc;
+    }, {});
+
+    const data = Object.values(resumenPorMetodo);
+
     return HttpResponse.json({
-      data: filtered,
+      data,
       total: filtered.length,
     });
   }),
