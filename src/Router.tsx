@@ -21,12 +21,15 @@ import PantallaRutinas from './pages/Admin/PantallaRutinas';
 import Configuracion from './pages/Admin/Configuracion';
 import NuevoPago from './pages/Admin/NuevoPago';
 import NuevaRutina from './pages/Admin/NuevaRutina';
+import NuevaClase from './pages/Admin/NuevaClase';
 import CuentaCorriente from './pages/Admin/CuentaCorriente';
 import Clases from './pages/Admin/Clases';
 import AlumnoInicio from './pages/Alumno/Inicio';
 import Nutricion from './pages/Admin/Nutricion';
 import Medidas from './pages/Admin/Medidas';
+import NuevaMedida from './pages/Admin/NuevaMedida';
 import Asistencia from './pages/Admin/Asistencia';
+import MarcarAsistencia from './pages/Admin/MarcarAsistencia';
 import Avisos from './pages/Admin/Avisos';
 import Imagenes from './pages/Admin/Imagenes';
 import Beneficios from './pages/Admin/Beneficios';
@@ -39,12 +42,18 @@ import Generales from './pages/Admin/Generales';
 import Personalizacion from './pages/Admin/Personalizacion';
 import Usuarios from './pages/Admin/Usuarios';
 import Permisos from './pages/Admin/Permisos';
+import TurnosAlumno from './pages/Admin/TurnosAlumno';
+import CompraVenta from './pages/Admin/CompraVenta';
 
 // Alumno Pages
-// import AlumnoRutina from './pages/Alumno/Rutina';
+import AlumnoRutina from './pages/Alumno/Rutina';
 import AlumnoTurnos from './pages/Alumno/Turnos';
-// import AlumnoPagos from './pages/Alumno/Pagos';
-// import Imagenes from './pages/Admin/Imagenes';
+import AlumnoClase from './pages/Alumno/Clase';
+import AlumnoPlanNutricional from './pages/Alumno/PlanNutricional';
+import NuevoPlanNutricional from './pages/Alumno/NuevoPlanNutricional';
+import AlumnoMedidas from './pages/Alumno/Medidas';
+import AlumnoBeneficios from './pages/Alumno/Beneficios';
+import AlumnoPagos from './pages/Alumno/Pagos';
 
 const Router = () => {
   const { user, isLoading } = useAuth();
@@ -64,9 +73,14 @@ const Router = () => {
         <Route path="/*" element={<AlumnoLayout />}>
           <Route index element={<Navigate to="inicio" />} />
           <Route path="inicio" element={<AlumnoInicio />} />
-          {/* <Route path="rutina" element={<AlumnoRutina />} />
+          <Route path="rutina" element={<AlumnoRutina />} />
           <Route path="turnos" element={<AlumnoTurnos />} />
-          <Route path="pagos" element={<AlumnoPagos />} /> */}
+          <Route path="clase" element={<AlumnoClase />} />
+          <Route path="plan-nutricional" element={<AlumnoPlanNutricional />} />
+          <Route path="nutricion/nuevo" element={<NuevoPlanNutricional />} />
+          <Route path="medidas" element={<AlumnoMedidas />} />
+          <Route path="beneficios" element={<AlumnoBeneficios />} />
+          <Route path="pagos" element={<AlumnoPagos />} />
         </Route>
       ) : (
         <Route path="/*" element={<AdminLayout />}>
@@ -79,11 +93,15 @@ const Router = () => {
           <Route path="rutinas" element={<Rutinas />} />
           <Route path="rutinas/nueva" element={<NuevaRutina />} />
           <Route path="turnos" element={<Turnos />} />
-          <Route path="turnos-alumno" element={<AlumnoTurnos />} />
+          <Route path="turnos-alumno" element={<TurnosAlumno />} />
           <Route path="clases" element={<Clases />} />
+          <Route path="clases/nueva" element={<NuevaClase />} />
           <Route path="nutricion" element={<Nutricion />} />
+          <Route path="nutricion/nuevo" element={<NuevoPlanNutricional />} />
           <Route path="medidas" element={<Medidas />} />
+          <Route path="medidas/nueva" element={<NuevaMedida />} />
           <Route path="asistencia" element={<Asistencia />} />
+          <Route path="asistencia/marcar" element={<MarcarAsistencia />} />
           <Route path="caja" element={<Caja />} />
           <Route path="abrir-caja" element={<AbrirCaja />} />
           <Route path="cierre-caja" element={<CierreCaja />} />
@@ -91,6 +109,7 @@ const Router = () => {
           <Route path="imagenes" element={<Imagenes />} />
           <Route path="beneficios" element={<Beneficios />} />
           <Route path="productos" element={<Productos />} />
+          <Route path="compra-venta" element={<CompraVenta />} />
           <Route path="informes" element={<Informes />} />
           <Route path="informe-ventas" element={<InformeVentas />} />
           <Route path="movimiento-caja" element={<MovimientoCaja />} />

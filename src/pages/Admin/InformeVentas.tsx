@@ -97,6 +97,7 @@ const InformeVentas: React.FC = () => {
         tipo: 'ventas',
         desde: filters.desde,
         hasta: filters.hasta,
+        ...(filters.productoId ? { productoId: Number(filters.productoId) } : {}),
       });
       const url = window.URL.createObjectURL(new Blob([response]));
       const link = document.createElement('a');
@@ -110,11 +111,12 @@ const InformeVentas: React.FC = () => {
         title: 'Informe exportado',
         message: 'El informe de ventas se ha descargado correctamente',
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Error al exportar PDF:', error);
       addToast({
         type: 'error',
         title: 'Error',
-        message: 'Error al exportar el informe de ventas',
+        message: error?.response?.data?.message || 'Error al exportar el informe de ventas',
       });
     }
   };

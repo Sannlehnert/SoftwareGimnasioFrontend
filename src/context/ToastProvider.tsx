@@ -59,10 +59,10 @@ const ToastContainer: React.FC = () => {
 
 const ToastItem: React.FC<{ toast: Toast; onClose: () => void }> = ({ toast, onClose }) => {
   const bgColors = {
-    success: 'bg-success border-success/20',
-    error: 'bg-error border-error/20',
-    warning: 'bg-warning border-warning/20',
-    info: 'bg-primary-500 border-primary-500/20',
+    success: 'bg-green-600 border-green-700',
+    error: 'bg-red-600 border-red-700',
+    warning: 'bg-yellow-500 border-yellow-600',
+    info: 'bg-blue-600 border-blue-700',
   };
 
   return (

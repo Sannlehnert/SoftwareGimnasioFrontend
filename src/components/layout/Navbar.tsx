@@ -59,9 +59,6 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick, user, onLogout, showMenu =
               <h1 className="text-2xl font-bold text-display bg-gradient-primary bg-clip-text text-transparent">
                 MC GYM
               </h1>
-              <p className="text-sm text-neutral-500 hidden sm:block">
-                Sistema de Gestión Integral
-              </p>
             </div>
           </div>
         </div>
@@ -74,16 +71,6 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick, user, onLogout, showMenu =
               <span>Modo Offline</span>
             </div>
           )}
-
-          {/* Notificaciones */}
-          <button className="relative p-3 text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all duration-200 group">
-            <svg className="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM10.24 8.56a5.97 5.97 0 01-4.66-7.5 1 1 0 00-.68-1.21 1 1 0 00-1.21.68A7.97 7.97 0 008 12.5v.5H5a1 1 0 000 2h10a1 1 0 000-2h-3v-.5c0-1.64-.63-3.2-1.76-4.44z" />
-            </svg>
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-error-500 text-white text-xs rounded-full flex items-center justify-center font-bold shadow-glow-error animate-bounce-in">
-              3
-            </span>
-          </button>
 
           {/* Perfil del Usuario */}
           <div className="relative">

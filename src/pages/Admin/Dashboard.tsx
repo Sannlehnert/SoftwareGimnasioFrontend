@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../context/ToastProvider';
+import { useNavigate } from 'react-router-dom';
+import { RevenueChart, AttendanceChart } from '../../components/charts/DashboardCharts';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const { addToast } = useToast();
+  const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Actualizar hora cada minuto
@@ -165,14 +168,7 @@ const Dashboard: React.FC = () => {
                 <button
                   key={index}
                   onClick={() => {
-                    addToast({
-                      type: 'info',
-                      title: `Navegando a ${action.title}`,
-                      message: action.description,
-                      duration: 2000,
-                    });
-                    // Aquí iría la navegación real
-                    console.log(`Navigate to ${action.action}`);
+                    navigate(`/${action.action}`);
                   }}
                   className={`w-full btn-${action.color === 'primary' ? 'primary' : 'secondary'} justify-start group animate-fade-in`}
                   style={{ animationDelay: `${index * 100}ms` }}
@@ -222,13 +218,8 @@ const Dashboard: React.FC = () => {
                 <option>Último año</option>
               </select>
             </div>
-            <div className="h-64 flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-primary-200 rounded-full flex items-center justify-center mb-4 mx-auto">
-                  <span className="text-2xl">📈</span>
-                </div>
-                <p className="text-neutral-600">Gráfico de ingresos próximamente</p>
-              </div>
+            <div className="h-64">
+              <RevenueChart />
             </div>
           </div>
 
@@ -241,13 +232,8 @@ const Dashboard: React.FC = () => {
                 <option>Este mes</option>
               </select>
             </div>
-            <div className="h-64 flex items-center justify-center bg-gradient-to-br from-success-50 to-success-100 rounded-xl">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-success-200 rounded-full flex items-center justify-center mb-4 mx-auto">
-                  <span className="text-2xl">📊</span>
-                </div>
-                <p className="text-neutral-600">Gráfico de asistencia próximamente</p>
-              </div>
+            <div className="h-64">
+              <AttendanceChart />
             </div>
           </div>
         </div>

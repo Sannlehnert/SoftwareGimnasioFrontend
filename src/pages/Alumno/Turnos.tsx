@@ -1,222 +1,222 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { turnosService } from '../../api/services/turnos';
+import { useAuth } from '../../hooks/useAuth';
+import DataTable from '../../components/ui/DataTable';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../context/ToastProvider';
 
-// Mock data for student's shifts
-const mockTurnos = [
-  {
-    id: 1,
-    clase: 'Yoga',
-    fecha: '2024-01-15',
-    hora: '10:00',
-    instructor: 'María López',
-    estado: 'confirmado'
-  },
-  {
-    id: 2,
-    clase: 'Spinning',
-    fecha: '2024-01-16',
-    hora: '11:00',
-    instructor: 'Carlos Rodríguez',
-    estado: 'confirmado'
-  },
-  {
-    id: 3,
-    clase: 'Cross Funcional',
-    fecha: '2024-01-17',
-    hora: '12:00',
-    instructor: 'Ana García',
-    estado: 'pendiente'
-  },
-  {
-    id: 4,
-    clase: 'Yoga',
-    fecha: '2024-01-18',
-    hora: '10:00',
-    instructor: 'María López',
-    estado: 'confirmado'
-  }
-];
-
-const Turnos: React.FC = () => {
+const AlumnoTurnos: React.FC = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { addToast } = useToast();
-  const navigate = useNavigate();
-  const [filtroEstado, setFiltroEstado] = useState('');
+  const [activeTab, setActiveTab] = useState<'mis-turnos' | 'disponibles'>('mis-turnos');
 
-  // Mock query - replace with actual API service
-  const { data: turnos, isLoading } = useQuery({
-    queryKey: ['turnos-alumno'],
-    queryFn: async () => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return mockTurnos;
-    }
+  const { data: misTurnos, isLoading: loadingMisTurnos } = useQuery({
+    queryKey: ['mis-turnos', user?.id],
+    queryFn: () => turnosService.getMisTurnos(),
+    enabled: !!user?.id
   });
 
-  const filteredTurnos = turnos?.filter(turno =>
-    !filtroEstado || turno.estado === filtroEstado
-  ) || [];
+  const { data: turnosDisponibles, isLoading: loadingTurnosDisponibles } = useQuery({
+    queryKey: ['turnos-disponibles'],
+    queryFn: () => turnosService.getTurnos(),
+    enabled: activeTab === 'disponibles'
+  });
 
-  const handleReservarTurno = () => {
-    addToast({
-      type: 'info',
-      title: 'Funcionalidad pendiente',
-      message: 'La reserva de turnos estará disponible próximamente',
-    });
+  const cancelarInscripcionMutation = useMutation({
+    mutationFn: (inscripcionId: number) => turnosService.cancelarInscripcion(inscripcionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mis-turnos'] });
+      queryClient.invalidateQueries({ queryKey: ['turnos-disponibles'] });
+      addToast({
+        type: 'success',
+        title: 'Inscripción cancelada',
+        message: 'Has cancelado tu inscripción al turno',
+      });
+    },
+    onError: (error: any) => {
+      addToast({
+        type: 'error',
+        title: 'Error',
+        message: error.response?.data?.message || 'Error al cancelar la inscripción',
+      });
+    },
+  });
+
+  const inscribirMutation = useMutation({
+    mutationFn: (turnoId: number) => turnosService.inscribirAlumno(turnoId, user?.id || 0),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mis-turnos'] });
+      queryClient.invalidateQueries({ queryKey: ['turnos-disponibles'] });
+      addToast({
+        type: 'success',
+        title: 'Inscripción exitosa',
+        message: 'Te has inscrito al turno correctamente',
+      });
+    },
+    onError: (error: any) => {
+      addToast({
+        type: 'error',
+        title: 'Error',
+        message: error.response?.data?.message || 'Error al inscribirte al turno',
+      });
+    },
+  });
+
+  const misTurnosColumns = [
+    { key: 'claseNombre', label: 'Clase' },
+    { key: 'fechaHora', label: 'Fecha y Hora', render: (value: string) => new Date(value).toLocaleString('es-AR') },
+    { key: 'sala', label: 'Sala' },
+    { key: 'instructor', label: 'Instructor' },
+    { key: 'estadoInscripcion', label: 'Estado', render: (value: string) => (
+      <span className={`px-2 py-1 text-xs rounded-full ${
+        value === 'CONFIRMADO' ? 'bg-success/10 text-success' :
+        value === 'CANCELADO' ? 'bg-error/10 text-error' :
+        value === 'ASISTIO' ? 'bg-blue-100 text-blue-800' :
+        'bg-warning/10 text-warning'
+      }`}>
+        {value === 'CONFIRMADO' ? 'Confirmado' :
+         value === 'CANCELADO' ? 'Cancelado' :
+         value === 'ASISTIO' ? 'Asistió' : value}
+      </span>
+    )},
+  ];
+
+  const turnosDisponiblesColumns = [
+    { key: 'claseNombre', label: 'Clase' },
+    { key: 'fechaHora', label: 'Fecha y Hora', render: (value: string) => new Date(value).toLocaleString('es-AR') },
+    { key: 'sala', label: 'Sala' },
+    { key: 'instructor', label: 'Instructor' },
+    { key: 'cupo', label: 'Cupo', render: (value: number, row: any) => `${row.inscritos}/${value}` },
+    { key: 'estado', label: 'Estado', render: (value: string) => (
+      <span className={`px-2 py-1 text-xs rounded-full ${
+        value === 'ACTIVO' ? 'bg-success/10 text-success' :
+        value === 'COMPLETO' ? 'bg-warning/10 text-warning' :
+        'bg-error/10 text-error'
+      }`}>
+        {value === 'ACTIVO' ? 'Disponible' :
+         value === 'COMPLETO' ? 'Completo' : value}
+      </span>
+    )},
+  ];
+
+  const handleCancelarInscripcion = (inscripcionId: number) => {
+    if (window.confirm('¿Estás seguro de que quieres cancelar tu inscripción a este turno?')) {
+      cancelarInscripcionMutation.mutate(inscripcionId);
+    }
   };
 
-  const handleCancelarTurno = (turnoId: number) => {
-    addToast({
-      type: 'success',
-      title: 'Turno cancelado',
-      message: 'El turno ha sido cancelado exitosamente',
-    });
+  const handleInscribir = (turnoId: number) => {
+    if (window.confirm('¿Estás seguro de que quieres reservar este turno?')) {
+      inscribirMutation.mutate(turnoId);
+    }
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Mis Turnos</h1>
-        <Button onClick={handleReservarTurno}>
-          Reservar Nuevo Turno
-        </Button>
+        <h1 className="text-2xl font-bold text-gray-900">Turnos</h1>
       </div>
 
-      {/* KPI Turnos */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="kpi-card">
-          <p className="text-sm font-medium text-gray-600">Total Turnos</p>
-          <p className="text-2xl font-bold text-blue-600">
-            {turnos?.length || 0}
-          </p>
-        </div>
-        <div className="kpi-card">
-          <p className="text-sm font-medium text-gray-600">Confirmados</p>
-          <p className="text-2xl font-bold text-green-600">
-            {turnos?.filter(t => t.estado === 'confirmado').length || 0}
-          </p>
-        </div>
-        <div className="kpi-card">
-          <p className="text-sm font-medium text-gray-600">Pendientes</p>
-          <p className="text-2xl font-bold text-yellow-600">
-            {turnos?.filter(t => t.estado === 'pendiente').length || 0}
-          </p>
-        </div>
+      {/* Pestañas de navegación */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveTab('mis-turnos')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'mis-turnos'
+                ? 'border-primary-500 text-primary-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Mis Turnos Reservados
+          </button>
+          <button
+            onClick={() => setActiveTab('disponibles')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'disponibles'
+                ? 'border-primary-500 text-primary-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Turnos Disponibles
+          </button>
+        </nav>
       </div>
 
-      {/* Filtro */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Filtrar por estado
-            </label>
-            <select
-              value={filtroEstado}
-              onChange={(e) => setFiltroEstado(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            >
-              <option value="">Todos los estados</option>
-              <option value="confirmado">Confirmado</option>
-              <option value="pendiente">Pendiente</option>
-              <option value="cancelado">Cancelado</option>
-            </select>
-          </div>
-        </div>
-      </div>
+      {/* Contenido de las pestañas */}
+      {activeTab === 'mis-turnos' && (
+        <div className="space-y-6">
+          <DataTable
+            columns={misTurnosColumns}
+            data={misTurnos || []}
+            loading={loadingMisTurnos}
+            searchable={true}
+            actions={(row) => (
+              <div className="flex gap-2">
+                {row.estadoInscripcion === 'CONFIRMADO' ? (
+                  <button
+                    className="px-3 py-1.5 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg"
+                    onClick={() => handleCancelarInscripcion(row.inscripcionId)}
+                  >
+                    Cancelar
+                  </button>
+                ) : (
+                  <span className="text-sm text-gray-500">
+                    {row.estadoInscripcion === 'CANCELADO' ? 'Cancelado' :
+                     row.estadoInscripcion === 'ASISTIO' ? 'Asistió' :
+                     'Pendiente'}
+                  </span>
+                )}
+              </div>
+            )}
+          />
 
-      {/* Tabla de turnos */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Clase
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Fecha
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Hora
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Instructor
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Estado
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredTurnos.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                    No tienes turnos programados
-                  </td>
-                </tr>
-              ) : (
-                filteredTurnos.map((turno) => (
-                  <tr key={turno.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {turno.clase}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(turno.fecha).toLocaleDateString('es-AR')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {turno.hora}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {turno.instructor}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        turno.estado === 'confirmado' ? 'bg-green-100 text-green-800' :
-                        turno.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {turno.estado.charAt(0).toUpperCase() + turno.estado.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      {turno.estado === 'confirmado' && (
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => handleCancelarTurno(turno.id)}
-                        >
-                          Cancelar
-                        </Button>
-                      )}
-                      {turno.estado === 'pendiente' && (
-                        <span className="text-gray-500">Esperando confirmación</span>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+          {(!misTurnos || misTurnos.length === 0) && !loadingMisTurnos && (
+            <div className="text-center py-12">
+              <div className="text-gray-400 text-6xl mb-4">📅</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No tienes turnos reservados</h3>
+              <p className="text-gray-500">Cuando reserves un turno, aparecerá aquí.</p>
+            </div>
+          )}
         </div>
-      </div>
+      )}
+
+      {activeTab === 'disponibles' && (
+        <div className="space-y-6">
+          <DataTable
+            columns={turnosDisponiblesColumns}
+            data={turnosDisponibles || []}
+            loading={loadingTurnosDisponibles}
+            searchable={true}
+            actions={(row) => (
+              <div className="flex gap-2">
+                {row.estado === 'ACTIVO' ? (
+                  <button
+                    className="px-3 py-1.5 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg"
+                    onClick={() => handleInscribir(row.id)}
+                  >
+                    Reservar
+                  </button>
+                ) : (
+                  <span className="text-sm text-gray-500">Completo</span>
+                )}
+              </div>
+            )}
+          />
+
+          {(!turnosDisponibles || turnosDisponibles.length === 0) && !loadingTurnosDisponibles && (
+            <div className="text-center py-12">
+              <div className="text-gray-400 text-6xl mb-4">📅</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No hay turnos disponibles</h3>
+              <p className="text-gray-500">No hay turnos disponibles para reservar en este momento.</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
 
-export default Turnos;
+export default AlumnoTurnos;

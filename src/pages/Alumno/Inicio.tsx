@@ -1,15 +1,29 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { alumnosService } from '../../api/services/alumnos';
 import { useAuth } from '../../hooks/useAuth';
 
 const AlumnoInicio: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { data: alumno, isLoading } = useQuery({
     queryKey: ['alumno-data', user?.id],
     queryFn: () => alumnosService.getAlumno(user?.id || 0),
     enabled: !!user?.id
   });
+
+  const handleVerRutina = () => {
+    navigate('/rutina');
+  };
+
+  const handleReservarTurno = () => {
+    navigate('/turnos');
+  };
+
+  const handleVerPagos = () => {
+    navigate('/pagos');
+  };
 
   if (isLoading) {
     return (
@@ -92,19 +106,28 @@ const AlumnoInicio: React.FC = () => {
         <div className="kpi-card">
           <h3 className="text-lg font-semibold mb-4">Acciones Rápidas</h3>
           <div className="space-y-3">
-            <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors">
+            <button
+              onClick={handleVerRutina}
+              className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors"
+            >
               <div className="flex items-center">
                 <span className="text-xl mr-3">📋</span>
                 <span>Ver mi rutina</span>
               </div>
             </button>
-            <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors">
+            <button
+              onClick={handleReservarTurno}
+              className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors"
+            >
               <div className="flex items-center">
                 <span className="text-xl mr-3">⏰</span>
                 <span>Reservar turno</span>
               </div>
             </button>
-            <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors">
+            <button
+              onClick={handleVerPagos}
+              className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors"
+            >
               <div className="flex items-center">
                 <span className="text-xl mr-3">💰</span>
                 <span>Ver pagos</span>

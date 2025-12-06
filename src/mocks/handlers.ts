@@ -311,6 +311,34 @@ export const handlers = [
     const { id } = params;
     const alumno = mockAlumnos.find(a => a.id === parseInt(id as string));
 
+    if (!alumno && parseInt(id as string) === 100) {
+      // Mock alumno para el usuario logueado como alumno
+      const mockAlumno100 = {
+        id: 100,
+        nombre: 'Juan',
+        apellido: 'Alumno',
+        dni: '12345678',
+        email: 'alumno@mcgym.com',
+        telefono: '+5491112345678',
+        fechaNacimiento: '1990-01-01T00:00:00.000Z',
+        direccion: 'Calle Falsa 123',
+        planId: 1,
+        plan: 'Full Mensual',
+        fechaIngreso: '2023-01-01T00:00:00.000Z',
+        fechaVencimiento: '2024-12-31T00:00:00.000Z',
+        estado: 'ACTIVO',
+        notas: '',
+      };
+      mockAlumnos.push(mockAlumno100);
+      const alumnoConExtras = {
+        ...mockAlumno100,
+        estadoPago: 'AL_DIA',
+        tieneRutinaActiva: true,
+        proximaClase: 'Cross Funcional - Hoy 18:00',
+      };
+      return HttpResponse.json(alumnoConExtras);
+    }
+
     if (!alumno) {
       return HttpResponse.json(null, { status: 404 });
     }
@@ -324,6 +352,220 @@ export const handlers = [
     };
 
     return HttpResponse.json(alumnoConExtras);
+  }),
+
+  http.get('/api/v1/alumnos/:id/plan-nutricional', ({ params }) => {
+    const { id } = params;
+    const alumnoId = parseInt(id as string);
+
+    // Mock plan nutricional
+    const mockPlanNutricional = {
+      id: 1,
+      alumnoId,
+      objetivo: 'Pérdida de peso',
+      caloriasDiarias: 2000,
+      proteinas: 150,
+      carbohidratos: 200,
+      grasas: 67,
+      fechaActualizacion: new Date().toISOString(),
+      recomendaciones: 'Mantener una dieta equilibrada, beber al menos 2 litros de agua al día, y realizar ejercicio cardiovascular 3 veces por semana.',
+      comidasDiarias: [
+        {
+          nombre: 'Desayuno',
+          horario: '08:00',
+          calorias: 400,
+          proteinas: 20,
+          carbohidratos: 50,
+          grasas: 15,
+          alimentos: [
+            { nombre: 'Avena con frutas', porcion: '1 taza' },
+            { nombre: 'Yogurt griego', porcion: '150g' },
+            { nombre: 'Nueces', porcion: '1 puñado' },
+          ],
+        },
+        {
+          nombre: 'Almuerzo',
+          horario: '13:00',
+          calorias: 600,
+          proteinas: 40,
+          carbohidratos: 60,
+          grasas: 20,
+          alimentos: [
+            { nombre: 'Pechuga de pollo', porcion: '150g' },
+            { nombre: 'Quinoa', porcion: '1 taza cocida' },
+            { nombre: 'Ensalada mixta', porcion: '2 tazas' },
+            { nombre: 'Aceite de oliva', porcion: '1 cucharada' },
+          ],
+        },
+        {
+          nombre: 'Merienda',
+          horario: '16:00',
+          calorias: 300,
+          proteinas: 15,
+          carbohidratos: 40,
+          grasas: 10,
+          alimentos: [
+            { nombre: 'Manzana', porcion: '1 unidad' },
+            { nombre: 'Queso cottage', porcion: '100g' },
+          ],
+        },
+        {
+          nombre: 'Cena',
+          horario: '20:00',
+          calorias: 500,
+          proteinas: 35,
+          carbohidratos: 50,
+          grasas: 15,
+          alimentos: [
+            { nombre: 'Salmón', porcion: '150g' },
+            { nombre: 'Arroz integral', porcion: '1/2 taza cocida' },
+            { nombre: 'Brócoli', porcion: '1 taza' },
+            { nombre: 'Aceite de oliva', porcion: '1 cucharada' },
+          ],
+        },
+      ],
+      progresoSemanal: [
+        { cumplido: true },
+        { cumplido: true },
+        { cumplido: false },
+        { cumplido: true },
+        { cumplido: true },
+        { cumplido: false },
+        { cumplido: true },
+      ],
+    };
+
+    return HttpResponse.json(mockPlanNutricional);
+  }),
+
+  http.get('/api/v1/alumnos/:id/rutina', ({ params }) => {
+    const { id } = params;
+    const alumnoId = parseInt(id as string);
+
+    // Mock rutina
+    const mockRutina = {
+      id: 1,
+      alumnoId,
+      nombre: 'Rutina de Fuerza y Cardio',
+      descripcion: 'Rutina semanal enfocada en ganancia de masa muscular y mejora cardiovascular',
+      fechaCreacion: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      fechaActualizacion: new Date().toISOString(),
+      dias: [
+        {
+          dia: 'Lunes',
+          ejercicios: [
+            {
+              id: 1,
+              nombre: 'Press de banca',
+              series: 4,
+              repeticiones: '8-10',
+              descanso: '90s',
+              notas: 'Mantener espalda neutra',
+              completado: true,
+            },
+            {
+              id: 2,
+              nombre: 'Sentadillas',
+              series: 4,
+              repeticiones: '10-12',
+              descanso: '60s',
+              notas: 'Profundidad completa',
+              completado: true,
+            },
+            {
+              id: 3,
+              nombre: 'Remo con barra',
+              series: 3,
+              repeticiones: '8-10',
+              descanso: '90s',
+              notas: 'Mantener espalda recta',
+              completado: false,
+            },
+          ],
+        },
+        {
+          dia: 'Martes',
+          ejercicios: [
+            {
+              id: 4,
+              nombre: 'Cardio - Ciclismo',
+              series: 1,
+              repeticiones: '30 min',
+              descanso: '0s',
+              notas: 'Ritmo moderado',
+              completado: true,
+            },
+          ],
+        },
+        {
+          dia: 'Miércoles',
+          ejercicios: [
+            {
+              id: 5,
+              nombre: 'Press militar',
+              series: 4,
+              repeticiones: '8-10',
+              descanso: '90s',
+              notas: 'Controlar el movimiento',
+              completado: true,
+            },
+            {
+              id: 6,
+              nombre: 'Peso muerto',
+              series: 3,
+              repeticiones: '6-8',
+              descanso: '120s',
+              notas: 'Mantener espalda neutra',
+              completado: false,
+            },
+          ],
+        },
+        {
+          dia: 'Jueves',
+          ejercicios: [
+            {
+              id: 7,
+              nombre: 'Cardio - Elíptica',
+              series: 1,
+              repeticiones: '25 min',
+              descanso: '0s',
+              notas: 'Variar intensidad',
+              completado: true,
+            },
+          ],
+        },
+        {
+          dia: 'Viernes',
+          ejercicios: [
+            {
+              id: 8,
+              nombre: 'Dominadas',
+              series: 3,
+              repeticiones: '6-8',
+              descanso: '90s',
+              notas: 'Usar asistencia si necesario',
+              completado: true,
+            },
+            {
+              id: 9,
+              nombre: 'Curl de bíceps',
+              series: 3,
+              repeticiones: '10-12',
+              descanso: '60s',
+              notas: 'Controlar el movimiento',
+              completado: true,
+            },
+          ],
+        },
+      ],
+      progresoSemanal: {
+        diasCompletados: 3,
+        totalDias: 5,
+        porcentajeCompletado: 60,
+      },
+    };
+
+    return HttpResponse.json(mockRutina);
   }),
 
   // Acceso
@@ -583,9 +825,10 @@ export const handlers = [
     }
 
     // Simular turnos del alumno
-    const misTurnos = mockTurnos.slice(0, 2).map(turno => ({
+    const misTurnos = mockTurnos.slice(0, 2).map((turno, index) => ({
       ...turno,
       estadoInscripcion: 'CONFIRMADO',
+      inscripcionId: index + 1,
     }));
 
     return HttpResponse.json(misTurnos);
@@ -791,5 +1034,224 @@ export const handlers = [
     }
 
     return HttpResponse.json(newMovimiento);
+  }),
+
+  // Informes
+  http.get('/api/v1/informes/ventas', ({ request }) => {
+    const url = new URL(request.url);
+    const desde = url.searchParams.get('desde');
+    const hasta = url.searchParams.get('hasta');
+    const productoId = url.searchParams.get('productoId');
+
+    // Mock ventas data
+    const mockVentas = Array.from({ length: 25 }, (_, i) => {
+      const productos = ['Proteína Whey 1kg', 'Creatina 500g', 'Guantes de Levantamiento', 'Barra Proteica'];
+      const alumnos = ['Juan Pérez', 'María García', 'Carlos López', 'Ana Rodríguez'];
+      const producto = productos[i % productos.length];
+      const cantidad = Math.floor(Math.random() * 5) + 1;
+      const precioUnitario = [22000, 12000, 5000, 350][i % 4];
+      const total = precioUnitario * cantidad;
+
+      return {
+        id: i + 1,
+        fecha: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString(),
+        productoNombre: producto,
+        productoId: (i % 4) + 1,
+        cantidad,
+        precioUnitario,
+        total,
+        alumnoNombre: alumnos[i % alumnos.length],
+        alumnoId: (i % alumnos.length) + 1,
+        usuarioNombre: 'Administrador',
+        usuarioId: 1,
+      };
+    });
+
+    let filtered = mockVentas;
+
+    if (desde) {
+      filtered = filtered.filter(venta => new Date(venta.fecha) >= new Date(desde));
+    }
+
+    if (hasta) {
+      filtered = filtered.filter(venta => new Date(venta.fecha) <= new Date(hasta));
+    }
+
+    if (productoId) {
+      filtered = filtered.filter(venta => venta.productoId === parseInt(productoId));
+    }
+
+    return HttpResponse.json({
+      data: filtered,
+      total: filtered.length,
+    });
+  }),
+
+  http.post('/api/v1/informes/generar-pdf', async ({ request }) => {
+    const data = await request.json() as any;
+
+    // Mock PDF generation - return a blob
+    const mockPdfContent = `%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+/Resources <<
+/Font <<
+/F1 5 0 R
+>>
+>>
+>>
+endobj
+
+4 0 obj
+<<
+/Length 44
+>>
+stream
+BT
+/F1 12 Tf
+72 720 Td
+(Informe de Ventas - ${data.tipo}) Tj
+ET
+endstream
+endobj
+
+5 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+
+xref
+0 6
+0000000000 65535 f
+0000000009 00000 n
+0000000058 00000 n
+0000000115 00000 n
+0000000274 00000 n
+0000000368 00000 n
+trailer
+<<
+/Size 6
+/Root 1 0 R
+>>
+startxref
+465
+%%EOF`;
+
+    const blob = new Blob([mockPdfContent], { type: 'application/pdf' });
+    return new HttpResponse(blob, {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': 'attachment; filename="informe-ventas.pdf"',
+      },
+    });
+  }),
+
+  http.get('/api/v1/informes/cobros', ({ request }) => {
+    const url = new URL(request.url);
+    const desde = url.searchParams.get('desde');
+    const hasta = url.searchParams.get('hasta');
+
+    // Mock cobros data
+    const mockCobros = Array.from({ length: 20 }, (_, i) => ({
+      id: i + 1,
+      fecha: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString(),
+      alumnoNombre: `Alumno ${(i % 5) + 1}`,
+      alumnoId: (i % 5) + 1,
+      monto: [5000, 6000, 7000, 8000][i % 4],
+      metodoPago: ['EFECTIVO', 'TARJETA', 'MERCADO_PAGO', 'TRANSFERENCIA'][i % 4],
+      concepto: 'CUOTA_MENSUAL',
+      usuarioNombre: 'Administrador',
+    }));
+
+    let filtered = mockCobros;
+
+    if (desde) {
+      filtered = filtered.filter(cobro => new Date(cobro.fecha) >= new Date(desde));
+    }
+
+    if (hasta) {
+      filtered = filtered.filter(cobro => new Date(cobro.fecha) <= new Date(hasta));
+    }
+
+    return HttpResponse.json({
+      data: filtered,
+      total: filtered.length,
+    });
+  }),
+
+  http.get('/api/v1/informes/ingresos', ({ request }) => {
+    const url = new URL(request.url);
+    const desde = url.searchParams.get('desde');
+    const hasta = url.searchParams.get('hasta');
+
+    // Mock ingresos data
+    const mockIngresos = Array.from({ length: 15 }, (_, i) => ({
+      id: i + 1,
+      fecha: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString(),
+      concepto: ['Cuota mensual', 'Venta de suplementos', 'Clase particular'][i % 3],
+      monto: [5000, 3500, 8000][i % 3],
+      metodoPago: ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA'][i % 3],
+      categoria: ['CUOTAS', 'VENTAS', 'OTROS'][i % 3],
+      usuarioNombre: 'Administrador',
+    }));
+
+    let filtered = mockIngresos;
+
+    if (desde) {
+      filtered = filtered.filter(ingreso => new Date(ingreso.fecha) >= new Date(desde));
+    }
+
+    if (hasta) {
+      filtered = filtered.filter(ingreso => new Date(ingreso.fecha) <= new Date(hasta));
+    }
+
+    return HttpResponse.json({
+      data: filtered,
+      total: filtered.length,
+    });
+  }),
+
+  http.get('/api/v1/informes/mapa-calor', ({ request }) => {
+    const url = new URL(request.url);
+    const desde = url.searchParams.get('desde');
+    const hasta = url.searchParams.get('hasta');
+
+    // Mock mapa de calor data
+    const mockMapaCalor = Array.from({ length: 24 }, (_, i) => ({
+      hora: `${String(i).padStart(2, '0')}:00`,
+      lunes: Math.floor(Math.random() * 20),
+      martes: Math.floor(Math.random() * 20),
+      miercoles: Math.floor(Math.random() * 20),
+      jueves: Math.floor(Math.random() * 20),
+      viernes: Math.floor(Math.random() * 20),
+      sabado: Math.floor(Math.random() * 15),
+      domingo: Math.floor(Math.random() * 10),
+    }));
+
+    return HttpResponse.json({
+      data: mockMapaCalor,
+    });
   }),
 ];

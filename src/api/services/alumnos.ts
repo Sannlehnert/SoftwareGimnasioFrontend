@@ -76,4 +76,9 @@ export const alumnosService = {
     const { data } = await api.get(`/alumnos/${alumnoId}/rutinas`);
     return data;
   },
+
+  getPlanNutricional: async (alumnoId: number) => {
+    const { data } = await api.get(`/alumnos/${alumnoId}/plan-nutricional`);
+    return data;
+  },
 };

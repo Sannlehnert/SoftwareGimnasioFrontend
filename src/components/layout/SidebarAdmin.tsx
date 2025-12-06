@@ -279,7 +279,6 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ isOpen, onClose }) => {
                 <h1 className="text-xl font-bold text-display bg-gradient-primary bg-clip-text text-transparent">
                   MC GYM
                 </h1>
-                <p className="text-xs text-neutral-500">Sistema Integral</p>
               </div>
             </div>
           </div>

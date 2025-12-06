@@ -19,9 +19,11 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({
 
   const handleKeyPress = useCallback((value: string) => {
     if (dni.length < 15 && !isSubmitting && !disabled) {
-      setDni(prev => prev + value);
+      const newDni = dni + value;
+      console.log('NumericKeypad: Adding digit:', value, 'New DNI:', newDni);
+      setDni(newDni);
     }
-  }, [dni.length, isSubmitting, disabled]);
+  }, [dni, isSubmitting, disabled]);
 
   const handleDelete = () => {
     if (!isSubmitting && !disabled) {
@@ -119,16 +121,33 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({
     <div className="w-full max-w-md mx-auto">
       {/* Display del DNI */}
       <div className="mb-6">
-        <input
-          ref={inputRef}
-          type="text"
-          value={dni}
-          readOnly
-          className={`w-full text-4xl text-center p-6 border-2 rounded-xl bg-white transition-all duration-200 font-mono ${
-            statusColors[status]
-          } ${disabled ? 'opacity-50' : ''}`}
-          placeholder="Ingrese DNI"
-        />
+        <div className={`relative w-full border-2 rounded-xl bg-white transition-all duration-200 font-mono ${
+          statusColors[status]
+        } ${disabled ? 'opacity-50' : ''}`}>
+          {/* Mostrar el DNI como texto si hay contenido, placeholder si está vacío */}
+          {dni.length > 0 ? (
+            <div className="w-full text-4xl text-center p-6 font-mono text-black min-h-[4rem] flex items-center justify-center">
+              {dni}
+            </div>
+          ) : (
+            <div className="w-full text-4xl text-center p-6 font-mono text-gray-400 min-h-[4rem] flex items-center justify-center">
+              Ingrese DNI
+            </div>
+          )}
+          {/* Input oculto para mantener el foco y funcionalidad */}
+          <input
+            ref={inputRef}
+            type="text"
+            value={dni}
+            readOnly
+            className="absolute inset-0 w-full h-full opacity-0 cursor-default"
+            placeholder="Ingrese DNI"
+          />
+          {/* Debug info */}
+          <div className="absolute top-0 right-0 text-xs text-gray-500 bg-yellow-200 px-1 rounded">
+            Debug: {dni.length} chars - DNI: "{dni}"
+          </div>
+        </div>
       </div>
 
       {/* Mensaje de estado */}
