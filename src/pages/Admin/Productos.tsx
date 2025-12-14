@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { productosService } from '../../api/services/productos';
 import DataTable from '../../components/ui/DataTable';
 import Button from '../../components/ui/Button';
@@ -9,6 +10,7 @@ import { useToast } from '../../context/ToastProvider';
 const Productos: React.FC = () => {
   const queryClient = useQueryClient();
   const { addToast } = useToast();
+  const navigate = useNavigate();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isVentaModalOpen, setIsVentaModalOpen] = useState(false);
@@ -176,7 +178,11 @@ const Productos: React.FC = () => {
             >
               Vender
             </Button>
-            <Button size="sm" variant="secondary">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => navigate(`/productos/${row.id}/editar`)}
+            >
               Editar
             </Button>
           </div>

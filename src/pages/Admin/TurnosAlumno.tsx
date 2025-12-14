@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../context/ToastProvider';
 
@@ -93,6 +94,7 @@ const mockTurnosPorAlumno = [
 
 const TurnosAlumno: React.FC = () => {
   const { addToast } = useToast();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAlumno, setSelectedAlumno] = useState<number | null>(null);
 
@@ -116,11 +118,7 @@ const TurnosAlumno: React.FC = () => {
   };
 
   const handleEditarTurno = (turnoId: number) => {
-    addToast({
-      type: 'info',
-      title: 'Funcionalidad pendiente',
-      message: 'La edición de turnos estará disponible próximamente',
-    });
+    navigate(`/turnos-alumno/${turnoId}/editar`);
   };
 
   const handleCancelarTurno = (turnoId: number) => {

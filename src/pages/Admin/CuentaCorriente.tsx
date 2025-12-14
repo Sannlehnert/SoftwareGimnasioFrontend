@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { alumnosService } from '../../api/services/alumnos';
 import { pagosService } from '../../api/services/pagos';
 import Button from '../../components/ui/Button';
@@ -19,6 +20,7 @@ interface CuentaCorrienteItem {
 
 const CuentaCorriente: React.FC = () => {
   const { addToast } = useToast();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
 
   const { data: alumnos, isLoading: loadingAlumnos } = useQuery({
@@ -63,11 +65,7 @@ const CuentaCorriente: React.FC = () => {
   );
 
   const handleVerDetalle = (alumnoId: number) => {
-    addToast({
-      type: 'info',
-      title: 'Funcionalidad pendiente',
-      message: 'La vista de detalle estará disponible próximamente',
-    });
+    navigate(`/cuenta-corriente/${alumnoId}`);
   };
 
   if (loadingAlumnos || loadingPagos) {

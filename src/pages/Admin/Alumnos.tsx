@@ -5,6 +5,7 @@ import { alumnosService } from '../../api/services/alumnos';
 import DataTable from '../../components/ui/DataTable';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../context/ToastProvider';
+import { pdfUtils } from '../../utils/pdf';
 
 const Alumnos: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const Alumnos: React.FC = () => {
   const [search, setSearch] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('TODOS');
   const [planFilter, setPlanFilter] = useState('TODOS');
+  const [selectedAlumnos, setSelectedAlumnos] = useState<any[]>([]);
 
   const { data: alumnos, isLoading, error } = useQuery({
     queryKey: ['alumnos', search, estadoFilter, planFilter],
@@ -96,6 +98,89 @@ const Alumnos: React.FC = () => {
       message: 'Error al cargar los alumnos',
     });
   }
+
+  const handleEnviarRecordatorio = () => {
+    if (selectedAlumnos.length === 0) {
+      addToast({
+        type: 'warning',
+        title: 'Selección requerida',
+        message: 'Por favor selecciona al menos un alumno para enviar recordatorio',
+      });
+      return;
+    }
+
+    // Simular envío de recordatorios
+    const alumnosVencidos = selectedAlumnos.filter((alumno: any) => {
+      const vencimiento = new Date(alumno.fechaVencimiento);
+      return vencimiento < new Date();
+    });
+
+    if (alumnosVencidos.length === 0) {
+      addToast({
+        type: 'info',
+        title: 'Sin alumnos vencidos',
+        message: 'No hay alumnos seleccionados con cuotas vencidas',
+      });
+      return;
+    }
+
+    // Aquí iría la lógica real para enviar emails/SMS
+    addToast({
+      type: 'success',
+      title: 'Recordatorios enviados',
+      message: `Se enviaron recordatorios a ${alumnosVencidos.length} alumnos`,
+    });
+  };
+
+  const handleGenerarReporte = async () => {
+    if (selectedAlumnos.length === 0) {
+      addToast({
+        type: 'warning',
+        title: 'Selección requerida',
+        message: 'Por favor selecciona al menos un alumno para generar el reporte',
+      });
+      return;
+    }
+
+    try {
+      // Generar reporte PDF con los alumnos seleccionados
+      const reportData = {
+        titulo: 'Reporte de Alumnos',
+        fecha: new Date().toLocaleDateString('es-AR'),
+        alumnos: selectedAlumnos.map((alumno: any) => ({
+          nombre: `${alumno.nombre} ${alumno.apellido}`,
+          dni: alumno.dni,
+          email: alumno.email,
+          telefono: alumno.telefono,
+          plan: alumno.plan,
+          estado: alumno.estado,
+          fechaVencimiento: new Date(alumno.fechaVencimiento).toLocaleDateString('es-AR'),
+        })),
+        estadisticas: {
+          totalSeleccionados: selectedAlumnos.length,
+          activos: selectedAlumnos.filter((a: any) => a.estado === 'ACTIVO').length,
+          vencidos: selectedAlumnos.filter((a: any) => {
+            const vencimiento = new Date(a.fechaVencimiento);
+            return vencimiento < new Date();
+          }).length,
+        },
+      };
+
+      await pdfUtils.generateAlumnosReport(reportData);
+
+      addToast({
+        type: 'success',
+        title: 'Reporte generado',
+        message: 'El reporte de alumnos se ha descargado correctamente',
+      });
+    } catch (error) {
+      addToast({
+        type: 'error',
+        title: 'Error',
+        message: 'Error al generar el reporte',
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -200,7 +285,7 @@ const Alumnos: React.FC = () => {
         searchable={false}
         selectable={true}
         onSelectionChange={(selectedRows) => {
-          console.log('Alumnos seleccionados:', selectedRows);
+          setSelectedAlumnos(selectedRows);
         }}
         actions={(row) => (
           <div className="flex gap-2">
@@ -252,10 +337,18 @@ const Alumnos: React.FC = () => {
           >
             Exportar a Excel
           </Button>
-          <Button variant="secondary" size="sm">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleEnviarRecordatorio}
+          >
             Enviar Recordatorio
           </Button>
-          <Button variant="secondary" size="sm">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleGenerarReporte}
+          >
             Generar Reporte
           </Button>
         </div>

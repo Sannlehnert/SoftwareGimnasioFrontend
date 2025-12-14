@@ -72,15 +72,38 @@ const MapaCalor: React.FC = () => {
     });
   };
 
-  const getIntensidadColor = (intensidad: string, estado: string) => {
-    if (estado === 'SUSPENDIDO') return 'bg-red-500';
-    if (estado === 'INACTIVO') return 'bg-yellow-500';
+  const getHeatMapColor = (diasDesdeUltimaAsistencia: number, estado: string) => {
+    // Para alumnos suspendidos, usar rojo intenso (zona muy caliente)
+    if (estado === 'SUSPENDIDO') {
+      return 'bg-gradient-to-br from-red-700 to-red-900';
+    }
 
-    switch (intensidad) {
-      case 'alta': return 'bg-green-500';
-      case 'media': return 'bg-green-300';
-      case 'baja': return 'bg-yellow-300';
-      default: return 'bg-gray-300';
+    // Para alumnos inactivos, usar amarillo (zona moderada)
+    if (estado === 'INACTIVO') {
+      return 'bg-gradient-to-br from-yellow-500 to-orange-500';
+    }
+
+    // Calcular intensidad basada en días (0-60 días)
+    // 0 días = muy activo (rojo intenso - zona caliente)
+    // 7 días = activo (naranja - zona caliente)
+    // 14 días = moderado (amarillo - zona templada)
+    // 30 días = poco activo (verde - zona fría)
+    // 60 días = inactivo (azul - zona muy fría)
+
+    const intensidad = Math.min(diasDesdeUltimaAsistencia / 60, 1); // Normalizar a 0-1
+
+    if (intensidad <= 0.1) { // 0-6 días - Muy activo (zona caliente)
+      return 'bg-gradient-to-br from-red-600 to-red-800';
+    } else if (intensidad <= 0.2) { // 7-12 días - Activo (zona caliente)
+      return 'bg-gradient-to-br from-orange-500 to-red-600';
+    } else if (intensidad <= 0.3) { // 13-18 días - Moderadamente activo (zona templada)
+      return 'bg-gradient-to-br from-yellow-400 to-orange-500';
+    } else if (intensidad <= 0.5) { // 19-30 días - Poco activo (zona fría)
+      return 'bg-gradient-to-br from-green-400 to-yellow-500';
+    } else if (intensidad <= 0.7) { // 31-42 días - Muy poco activo (zona fría)
+      return 'bg-gradient-to-br from-green-500 to-green-600';
+    } else { // 43-60 días - Inactivo (zona muy fría)
+      return 'bg-gradient-to-br from-blue-500 to-blue-700';
     }
   };
 
@@ -210,24 +233,39 @@ const MapaCalor: React.FC = () => {
 
       {/* Leyenda */}
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h2 className="text-lg font-semibold mb-4">Leyenda de Intensidad</h2>
+        <h2 className="text-lg font-semibold mb-4">Leyenda del Mapa de Calor</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="flex items-center">
+            <div className="w-4 h-4 bg-red-600 rounded mr-2"></div>
+            <span className="text-sm">Zona Caliente - Muy activo (≤7 días)</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-4 h-4 bg-orange-500 rounded mr-2"></div>
+            <span className="text-sm">Zona Caliente - Activo (8-12 días)</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-4 h-4 bg-yellow-400 rounded mr-2"></div>
+            <span className="text-sm">Zona Templada - Moderado (13-18 días)</span>
+          </div>
+          <div className="flex items-center">
             <div className="w-4 h-4 bg-green-500 rounded mr-2"></div>
-            <span className="text-sm">Alta actividad (≤7 días)</span>
+            <span className="text-sm">Zona Fría - Poco activo (19-42 días)</span>
           </div>
           <div className="flex items-center">
-            <div className="w-4 h-4 bg-green-300 rounded mr-2"></div>
-            <span className="text-sm">Media actividad (8-14 días)</span>
+            <div className="w-4 h-4 bg-blue-600 rounded mr-2"></div>
+            <span className="text-sm">Zona Muy Fría - Inactivo (43-60 días)</span>
           </div>
           <div className="flex items-center">
-            <div className="w-4 h-4 bg-yellow-300 rounded mr-2"></div>
-            <span className="text-sm">Baja actividad (15-30 días)</span>
+            <div className="w-4 h-4 bg-red-800 rounded mr-2"></div>
+            <span className="text-sm">Suspendido - Zona Muy Caliente</span>
           </div>
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-gray-300 rounded mr-2"></div>
-            <span className="text-sm">Sin actividad ({'>'}30 días)</span>
-          </div>
+        </div>
+        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+          <p className="text-sm text-gray-600">
+            <strong>Cómo leer el mapa:</strong> Los colores rojos y naranjas indican zonas calientes (alta actividad reciente),
+            mientras que los verdes y azules representan zonas frías (baja actividad). Pasa el mouse sobre cada cuadrado
+            para ver detalles específicos del alumno.
+          </p>
         </div>
       </div>
 
@@ -266,19 +304,13 @@ const MapaCalor: React.FC = () => {
             </div>
 
             {viewMode === 'compact' ? (
-              <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-2">
+              <div className="grid grid-cols-10 md:grid-cols-15 lg:grid-cols-20 xl:grid-cols-25 gap-0">
                 {heatMapData.map((alumno) => (
                   <div
                     key={alumno.id}
-                    className={`aspect-square rounded-lg border-2 border-white shadow-sm transition-all duration-300 hover:scale-110 hover:shadow-lg cursor-pointer relative group ${getIntensidadColor(alumno.intensidad, alumno.estado)}`}
+                    className={`aspect-square transition-all duration-300 hover:scale-125 cursor-pointer relative group ${getHeatMapColor(alumno.diasDesdeUltimaAsistencia, alumno.estado)}`}
                     title={`${alumno.nombre} ${alumno.apellido} - ${alumno.estado}`}
                   >
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-white font-bold text-sm drop-shadow-lg">
-                        {alumno.nombre.charAt(0)}{alumno.apellido.charAt(0)}
-                      </span>
-                    </div>
-
                     {/* Tooltip */}
                     <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10 pointer-events-none">
                       <div className="font-semibold">{alumno.nombre} {alumno.apellido}</div>
@@ -294,7 +326,7 @@ const MapaCalor: React.FC = () => {
                 {heatMapData.map((alumno) => (
                   <div
                     key={alumno.id}
-                    className={`p-4 rounded-lg border transition-all duration-300 hover:shadow-lg hover:scale-105 ${getIntensidadColor(alumno.intensidad, alumno.estado)}`}
+                    className={`p-4 rounded-lg border transition-all duration-300 hover:shadow-lg hover:scale-105 ${getHeatMapColor(alumno.diasDesdeUltimaAsistencia, alumno.estado)}`}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-semibold text-gray-900">
@@ -361,7 +393,7 @@ const MapaCalor: React.FC = () => {
                       {alumno.diasDesdeUltimaAsistencia}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`inline-block w-3 h-3 rounded-full ${getIntensidadColor(alumno.intensidad, alumno.estado)}`}></div>
+                      <div className={`inline-block w-3 h-3 rounded-full ${getHeatMapColor(alumno.diasDesdeUltimaAsistencia, alumno.estado)}`}></div>
                     </td>
                   </tr>
                 ))}

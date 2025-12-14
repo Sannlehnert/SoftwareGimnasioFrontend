@@ -87,11 +87,7 @@ const Asistencia: React.FC = () => {
   };
 
   const handleVerHistorial = (alumnoId: string) => {
-    addToast({
-      type: 'info',
-      title: 'Funcionalidad pendiente',
-      message: 'El historial de asistencia estará disponible próximamente',
-    });
+    navigate(`/asistencia/historial/${alumnoId}`);
   };
 
   if (isLoading) {

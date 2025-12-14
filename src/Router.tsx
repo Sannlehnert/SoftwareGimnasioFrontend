@@ -44,6 +44,18 @@ import Usuarios from './pages/Admin/Usuarios';
 import Permisos from './pages/Admin/Permisos';
 import TurnosAlumno from './pages/Admin/TurnosAlumno';
 import CompraVenta from './pages/Admin/CompraVenta';
+import ClaseDetail from './pages/Admin/ClaseDetail';
+import EditarClase from './pages/Admin/EditarClase';
+import CuentaCorrienteDetail from './pages/Admin/CuentaCorrienteDetail';
+import NutricionDetail from './pages/Admin/NutricionDetail';
+import NutricionAlumnos from './pages/Admin/NutricionAlumnos';
+import EditarNutricion from './pages/Admin/EditarNutricion';
+import EditarMedida from './pages/Admin/EditarMedida';
+import HistorialMedidas from './pages/Admin/HistorialMedidas';
+import HistorialAsistencia from './pages/Admin/HistorialAsistencia';
+import EditarAsistencia from './pages/Admin/EditarAsistencia';
+import EditarTurno from './pages/Admin/EditarTurno';
+import EditarProducto from './pages/Admin/EditarProducto';
 
 // Alumno Pages
 import AlumnoRutina from './pages/Alumno/Rutina';
@@ -94,14 +106,23 @@ const Router = () => {
           <Route path="rutinas/nueva" element={<NuevaRutina />} />
           <Route path="turnos" element={<Turnos />} />
           <Route path="turnos-alumno" element={<TurnosAlumno />} />
+          <Route path="turnos-alumno/:turnoId/editar" element={<EditarTurno />} />
           <Route path="clases" element={<Clases />} />
+          <Route path="clases/:id" element={<ClaseDetail />} />
+          <Route path="clases/:id/editar" element={<EditarClase />} />
           <Route path="clases/nueva" element={<NuevaClase />} />
           <Route path="nutricion" element={<Nutricion />} />
+          <Route path="nutricion/:id" element={<NutricionDetail />} />
+          <Route path="nutricion/:id/alumnos" element={<NutricionAlumnos />} />
           <Route path="nutricion/nuevo" element={<NuevoPlanNutricional />} />
           <Route path="medidas" element={<Medidas />} />
           <Route path="medidas/nueva" element={<NuevaMedida />} />
+          <Route path="medidas/:id/editar" element={<EditarMedida />} />
+          <Route path="medidas/historial/:alumnoId" element={<HistorialMedidas />} />
           <Route path="asistencia" element={<Asistencia />} />
           <Route path="asistencia/marcar" element={<MarcarAsistencia />} />
+          <Route path="asistencia/:asistenciaId/editar" element={<EditarAsistencia />} />
+          <Route path="asistencia/historial/:alumnoId" element={<HistorialAsistencia />} />
           <Route path="caja" element={<Caja />} />
           <Route path="abrir-caja" element={<AbrirCaja />} />
           <Route path="cierre-caja" element={<CierreCaja />} />
@@ -109,6 +130,7 @@ const Router = () => {
           <Route path="imagenes" element={<Imagenes />} />
           <Route path="beneficios" element={<Beneficios />} />
           <Route path="productos" element={<Productos />} />
+          <Route path="productos/:id/editar" element={<EditarProducto />} />
           <Route path="compra-venta" element={<CompraVenta />} />
           <Route path="informes" element={<Informes />} />
           <Route path="informe-ventas" element={<InformeVentas />} />
@@ -117,6 +139,7 @@ const Router = () => {
           <Route path="ingresos" element={<Ingresos />} />
           <Route path="mapa-calor" element={<MapaCalor />} />
           <Route path="cuenta-corriente" element={<CuentaCorriente />} />
+          <Route path="cuenta-corriente/:id" element={<CuentaCorrienteDetail />} />
           <Route path="pantalla-acceso" element={<PantallaAcceso />} />
           <Route path="pantalla-rutinas" element={<PantallaRutinas />} />
           <Route path="generales" element={<Generales />} />
@@ -124,6 +147,7 @@ const Router = () => {
           <Route path="usuarios" element={<Usuarios />} />
           <Route path="permisos" element={<Permisos />} />
           <Route path="configuracion" element={<Configuracion />} />
+          <Route path="nutricion/:id/editar" element={<EditarNutricion />} />
         </Route>
       )}
     </Routes>

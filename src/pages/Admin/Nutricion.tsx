@@ -70,19 +70,11 @@ const Nutricion: React.FC = () => {
   };
 
   const handleVerDetalle = (planId: number) => {
-    addToast({
-      type: 'info',
-      title: 'Funcionalidad pendiente',
-      message: 'La vista de detalle estará disponible próximamente',
-    });
+    navigate(`/nutricion/${planId}`);
   };
 
   const handleVerAlumnos = (planId: number) => {
-    addToast({
-      type: 'info',
-      title: 'Funcionalidad pendiente',
-      message: 'La lista de alumnos inscritos estará disponible próximamente',
-    });
+    navigate(`/nutricion/${planId}/alumnos`);
   };
 
   if (isLoading) {

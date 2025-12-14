@@ -8,6 +8,7 @@ import { useToast } from '../../context/ToastProvider';
 const mockMedidas = [
   {
     id: 1,
+    alumnoId: 1,
     alumno: 'Juan Pérez',
     fecha: '2024-01-15',
     peso: 75.5,
@@ -19,6 +20,7 @@ const mockMedidas = [
   },
   {
     id: 2,
+    alumnoId: 2,
     alumno: 'María García',
     fecha: '2024-01-15',
     peso: 62.3,
@@ -30,6 +32,7 @@ const mockMedidas = [
   },
   {
     id: 3,
+    alumnoId: 3,
     alumno: 'Carlos Rodríguez',
     fecha: '2024-01-14',
     peso: 82.1,
@@ -65,11 +68,7 @@ const Medidas: React.FC = () => {
   };
 
   const handleVerHistorial = (alumnoId: number) => {
-    addToast({
-      type: 'info',
-      title: 'Funcionalidad pendiente',
-      message: 'El historial de medidas estará disponible próximamente',
-    });
+    navigate(`/medidas/historial/${alumnoId}`);
   };
 
   const handleEditarMedida = (medidaId: number) => {
@@ -223,7 +222,7 @@ const Medidas: React.FC = () => {
                       <Button
                         size="sm"
                         variant="secondary"
-                        onClick={() => handleVerHistorial(medida.id)}
+                        onClick={() => handleVerHistorial(medida.alumnoId)}
                       >
                         Historial
                       </Button>

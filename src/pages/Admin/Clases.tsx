@@ -1,64 +1,24 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { turnosService } from '../../api/services/turnos';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../context/ToastProvider';
 
-// Mock data for classes - replace with actual API call
-const mockClases = [
-  {
-    id: 1,
-    nombre: 'CrossFit',
-    descripcion: 'Entrenamiento funcional de alta intensidad',
-    instructor: 'Juan Pérez',
-    capacidad: 15,
-    precio: 2500,
-    dias: ['Lunes', 'Miércoles', 'Viernes'],
-    horario: '19:00 - 20:00',
-    estado: 'ACTIVA'
-  },
-  {
-    id: 2,
-    nombre: 'Yoga',
-    descripcion: 'Clases de yoga para relajación y flexibilidad',
-    instructor: 'María García',
-    capacidad: 20,
-    precio: 1800,
-    dias: ['Martes', 'Jueves'],
-    horario: '18:00 - 19:00',
-    estado: 'ACTIVA'
-  },
-  {
-    id: 3,
-    nombre: 'Spinning',
-    descripcion: 'Clases de ciclismo indoor',
-    instructor: 'Carlos Rodríguez',
-    capacidad: 12,
-    precio: 2000,
-    dias: ['Lunes', 'Miércoles', 'Viernes'],
-    horario: '20:00 - 21:00',
-    estado: 'ACTIVA'
-  }
-];
-
 const Clases: React.FC = () => {
+  const queryClient = useQueryClient();
   const { addToast } = useToast();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Mock query - replace with actual API service
   const { data: clases, isLoading } = useQuery({
     queryKey: ['clases'],
-    queryFn: async () => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return mockClases;
-    }
+    queryFn: () => turnosService.getClases()
   });
 
   const filteredClases = clases?.filter(clase =>
     clase.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    clase.instructor.toLowerCase().includes(searchTerm.toLowerCase())
+    clase.instructores.some(instructor => instructor.toLowerCase().includes(searchTerm.toLowerCase()))
   ) || [];
 
   const handleNuevaClase = () => {
@@ -70,11 +30,7 @@ const Clases: React.FC = () => {
   };
 
   const handleVerDetalle = (claseId: number) => {
-    addToast({
-      type: 'info',
-      title: 'Funcionalidad pendiente',
-      message: 'La vista de detalle estará disponible próximamente',
-    });
+    navigate(`/clases/${claseId}`);
   };
 
   if (isLoading) {
@@ -95,7 +51,7 @@ const Clases: React.FC = () => {
       </div>
 
       {/* KPI Total Clases */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="kpi-card">
           <p className="text-sm font-medium text-gray-600">Total Clases</p>
           <p className="text-2xl font-bold text-blue-600">
@@ -105,19 +61,13 @@ const Clases: React.FC = () => {
         <div className="kpi-card">
           <p className="text-sm font-medium text-gray-600">Clases Activas</p>
           <p className="text-2xl font-bold text-green-600">
-            {clases?.filter(c => c.estado === 'ACTIVA').length || 0}
+            {clases?.filter(c => c.activo).length || 0}
           </p>
         </div>
         <div className="kpi-card">
           <p className="text-sm font-medium text-gray-600">Capacidad Total</p>
           <p className="text-2xl font-bold text-purple-600">
             {clases?.reduce((total, clase) => total + clase.capacidad, 0) || 0}
-          </p>
-        </div>
-        <div className="kpi-card">
-          <p className="text-sm font-medium text-gray-600">Ingresos Mensuales</p>
-          <p className="text-2xl font-bold text-success">
-            ${clases?.reduce((total, clase) => total + clase.precio, 0).toLocaleString('es-AR') || '0'}
           </p>
         </div>
       </div>
@@ -150,16 +100,13 @@ const Clases: React.FC = () => {
                   Clase
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Instructor
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Horario
+                  Instructores
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Capacidad
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Precio
+                  Duración
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Estado
@@ -172,7 +119,7 @@ const Clases: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredClases.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                     No se encontraron clases
                   </td>
                 </tr>
@@ -187,30 +134,24 @@ const Clases: React.FC = () => {
                         <div className="text-sm text-gray-500">
                           {clase.descripcion}
                         </div>
-                        <div className="text-xs text-gray-400">
-                          {clase.dias.join(', ')}
-                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {clase.instructor}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {clase.horario}
+                      {clase.instructores.join(', ')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {clase.capacidad}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-success">
-                      ${clase.precio.toLocaleString('es-AR')}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {clase.duracion} min
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        clase.estado === 'ACTIVA'
+                        clase.activo
                           ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
                       }`}>
-                        {clase.estado}
+                        {clase.activo ? 'Activa' : 'Inactiva'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">

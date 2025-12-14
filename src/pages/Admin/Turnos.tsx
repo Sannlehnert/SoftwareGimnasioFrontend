@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { turnosService } from '../../api/services/turnos';
 import DataTable from '../../components/ui/DataTable';
 import Button from '../../components/ui/Button';
@@ -13,6 +14,7 @@ import EditarTurnoForm from '../../components/forms/EditarTurnoForm';
 const Turnos: React.FC = () => {
   const queryClient = useQueryClient();
   const { addToast } = useToast();
+  const navigate = useNavigate();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAsistenciaModalOpen, setIsAsistenciaModalOpen] = useState(false);
@@ -20,7 +22,6 @@ const Turnos: React.FC = () => {
   const [isEditarTurnoModalOpen, setIsEditarTurnoModalOpen] = useState(false);
   const [selectedTurno, setSelectedTurno] = useState<any>(null);
   const [selectedClase, setSelectedClase] = useState<any>(null);
-  const [activeView, setActiveView] = useState<'turnos' | 'clases'>('turnos');
 
   const { data: turnos, isLoading: loadingTurnos } = useQuery({
     queryKey: ['turnos'],
@@ -209,101 +210,45 @@ const Turnos: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-900">Gestión de Turnos y Clases</h1>
         <div className="flex gap-2">
           <Button
-            variant={activeView === 'turnos' ? 'primary' : 'secondary'}
-            onClick={() => setActiveView('turnos')}
+            variant="primary"
           >
             Turnos
           </Button>
           <Button
-            variant={activeView === 'clases' ? 'primary' : 'secondary'}
-            onClick={() => setActiveView('clases')}
+            variant="secondary"
+            onClick={() => navigate('/clases')}
           >
             Clases
           </Button>
           <Button onClick={() => setIsModalOpen(true)}>
-            {activeView === 'turnos' ? 'Nuevo Turno' : 'Nueva Clase'}
+            Nuevo Turno
           </Button>
         </div>
       </div>
 
-      {activeView === 'turnos' && (
-        <DataTable
-          columns={turnosColumns}
-          data={turnos || []}
-          loading={loadingTurnos}
-          searchable={true}
-          actions={(row) => (
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                onClick={() => handleAsistenciaTurno(row)}
-              >
-                Asistencia
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => handleEditarTurno(row)}
-              >
-                Editar
-              </Button>
-            </div>
-          )}
-        />
-      )}
-
-      {activeView === 'clases' && (
-        <div className="space-y-6">
-          <DataTable
-            columns={clasesColumns}
-            data={clases || []}
-            loading={loadingClases}
-            searchable={true}
-            actions={(row) => (
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => handleEditarClase(row)}
-                >
-                  Editar
-                </Button>
-                <Button
-                  size="sm"
-                  variant={row.activo ? "danger" : "warning"}
-                  onClick={() => handleDesactivarClase(row)}
-                >
-                  {row.activo ? "Desactivar" : "Activar"}
-                </Button>
-              </div>
-            )}
-          />
-
-          {/* Estadísticas de Clases */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Total Clases</h3>
-              <p className="text-3xl font-bold text-primary-600">{clases?.length || 0}</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Clases Activas</h3>
-              <p className="text-3xl font-bold text-success">{clases?.filter((c: any) => c.activo).length || 0}</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Capacidad Total</h3>
-              <p className="text-3xl font-bold text-blue-600">
-                {clases?.reduce((acc: number, c: any) => acc + c.capacidad, 0) || 0}
-              </p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Instructores</h3>
-              <p className="text-3xl font-bold text-purple-600">
-                {new Set(clases?.flatMap((c: any) => c.instructores)).size || 0}
-              </p>
-            </div>
+      <DataTable
+        columns={turnosColumns}
+        data={turnos || []}
+        loading={loadingTurnos}
+        searchable={true}
+        actions={(row) => (
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={() => handleAsistenciaTurno(row)}
+            >
+              Asistencia
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => handleEditarTurno(row)}
+            >
+              Editar
+            </Button>
           </div>
-        </div>
-      )}
+        )}
+      />
 
       {/* Modal de Asistencia */}
       <Modal
@@ -392,25 +337,17 @@ const Turnos: React.FC = () => {
         )}
       </Modal>
 
-      {/* Modal Nuevo Turno/Clase */}
+      {/* Modal Nuevo Turno */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={activeView === 'turnos' ? "Crear Nuevo Turno" : "Crear Nueva Clase"}
+        title="Crear Nuevo Turno"
       >
-        {activeView === 'turnos' ? (
-          <NuevoTurnoForm
-            onClose={() => setIsModalOpen(false)}
-            onSubmit={(turnoData: Parameters<typeof turnosService.createTurno>[0]) => createTurnoMutation.mutate(turnoData)}
-            isLoading={createTurnoMutation.isPending}
-          />
-        ) : (
-          <NuevaClaseForm
-            onClose={() => setIsModalOpen(false)}
-            onSubmit={(claseData: Parameters<typeof turnosService.createClase>[0]) => createClaseMutation.mutate(claseData)}
-            isLoading={createClaseMutation.isPending}
-          />
-        )}
+        <NuevoTurnoForm
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={(turnoData: Parameters<typeof turnosService.createTurno>[0]) => createTurnoMutation.mutate(turnoData)}
+          isLoading={createTurnoMutation.isPending}
+        />
       </Modal>
 
       {/* Modal Editar Clase */}
