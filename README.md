@@ -1,72 +1,85 @@
-# React + TypeScript + Vite
+# 🏋️‍♂️ MC Gym – Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 📌 Descripción
+MC Gym es un software de gestión para gimnasios que permite administrar **alumnos, profesores, pagos y rutinas**, manteniendo una experiencia clara y familiar para usuarios acostumbrados a sistemas como AccessGym.
 
-Currently, two official plugins are available:
+Este repositorio contiene el **frontend** de la aplicación: la interfaz visual que utilizan administradores, profesores y alumnos.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 🎯 Objetivos
+- Interfaz simple y rápida
+- Diseño familiar (similar a AccessGym)
+- Separación clara por roles
+- Uso cómodo en desktop y mobile
+- Código escalable y mantenible
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 👥 Roles del sistema
+### 🛠️ Administrador
+- Gestión de alumnos
+- Control de pagos
+- Alta y baja de profesores
+- Vista general del estado del gimnasio
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 🧑‍🎓 Alumno
+- Visualización de estado de cuota
+- Acceso a rutinas
+- Perfil personal
+- Avisos del gimnasio
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 🧑‍🏫 Profesor
+- Ver alumnos asignados
+- Cargar y editar rutinas
+- Seguimiento básico
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🧱 Tecnologías utilizadas
+- ⚛️ React (Vite)
+- 🎨 CSS / CSS Modules
+- 🔁 Axios
+- 🔐 JWT
+- 🌐 React Router
+- 🧠 Context API
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🗂️ Estructura del proyecto
+- `src/pages` → Vistas principales
+- `src/components` → Componentes reutilizables
+- `src/services` → Conexión con API
+- `src/contexts` → Estado global (auth / usuario)
+- `src/assets` → Recursos visuales
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
+---
+
+## 🔐 Autenticación
+- Login con usuario y contraseña
+- Manejo de sesión con JWT
+- Rutas protegidas según rol
+- Logout seguro
+
+---
+
+## 🔄 Comunicación con backend
+El frontend consume una API REST desarrollada en Node.js para:
+- Autenticación
+- Gestión de alumnos
+- Pagos
+- Rutinas
+- Usuarios
+
+---
+
+## 🚀 Estado del proyecto
+🟡 En desarrollo  
+Base funcional completa y lista para ampliaciones.
+
+---
+
+
     },
   },
 ])
