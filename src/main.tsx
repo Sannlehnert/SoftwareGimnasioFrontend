@@ -16,17 +16,17 @@ const queryClient = new QueryClient({
   },
 });
 
-// Initialize MSW in development
-async function initMSW() {
-  if (import.meta.env.DEV) {
-    const { worker } = await import('./mocks/browser');
-    await worker.start({
-      onUnhandledRequest: 'bypass',
-    });
-  }
-}
+// MSW disabled for production backend connection
+// async function initMSW() {
+//   if (import.meta.env.DEV) {
+//     const { worker } = await import('./mocks/browser');
+//     await worker.start({
+//       onUnhandledRequest: 'bypass',
+//     });
+//   }
+// }
 
-initMSW();
+// initMSW();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

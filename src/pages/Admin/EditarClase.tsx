@@ -3,23 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../context/ToastProvider';
+import { turnosService } from '../../api/services/turnos';
 
-// Mock data - replace with actual API
-const mockClaseData = {
-  id: 1,
-  nombre: 'CrossFit',
-  descripcion: 'Entrenamiento funcional de alta intensidad que combina ejercicios de fuerza, gimnasia y acondicionamiento metabólico.',
-  instructor: 'Juan Pérez',
-  capacidad: 15,
-  precio: 2500,
-  dias: ['Lunes', 'Miércoles', 'Viernes'],
-  horario: '19:00 - 20:00',
-  estado: 'ACTIVA',
-  duracion: 60,
-  nivel: 'Intermedio',
-  requisitos: 'Buena condición física general',
-  equipo: ['Barra olímpica', 'Discos', 'Cajas de saltos', 'Anillas']
-};
+
 
 const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
@@ -32,7 +18,7 @@ const EditarClase: React.FC = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
-    instructor: '',
+    instructores: [] as string[],
     capacidad: '',
     precio: '',
     dias: [] as string[],
@@ -49,8 +35,10 @@ const EditarClase: React.FC = () => {
   const { data: clase, isLoading } = useQuery({
     queryKey: ['clase', id],
     queryFn: async () => {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return mockClaseData;
+      const clases = await turnosService.getClases();
+      const clase = clases.find((c: any) => c.id === parseInt(id || '0'));
+      if (!clase) throw new Error('Clase no encontrada');
+      return clase;
     },
     enabled: !!id
   });
@@ -60,26 +48,22 @@ const EditarClase: React.FC = () => {
       setFormData({
         nombre: clase.nombre,
         descripcion: clase.descripcion,
-        instructor: clase.instructor,
+        instructores: clase.instructores || [],
         capacidad: clase.capacidad.toString(),
-        precio: clase.precio.toString(),
-        dias: clase.dias,
-        horario: clase.horario,
-        estado: clase.estado,
+        precio: clase.precio?.toString() || '',
+        dias: clase.dias || [],
+        horario: clase.horario || '',
+        estado: clase.estado || 'ACTIVA',
         duracion: clase.duracion.toString(),
-        nivel: clase.nivel,
-        requisitos: clase.requisitos,
-        equipo: clase.equipo
+        nivel: clase.nivel || 'Principiante',
+        requisitos: clase.requisitos || '',
+        equipo: clase.equipo || []
       });
     }
   }, [clase]);
 
   const updateClaseMutation = useMutation({
-    mutationFn: async (data: any) => {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return { ...data, id: Number(id) };
-    },
+    mutationFn: (data: any) => turnosService.updateClase(Number(id), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clases'] });
       addToast({
@@ -101,7 +85,7 @@ const EditarClase: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.nombre || !formData.instructor || !formData.capacidad) {
+    if (!formData.nombre || !formData.instructores[0] || !formData.capacidad) {
       addToast({
         type: 'warning',
         title: 'Campos requeridos',
@@ -187,8 +171,8 @@ const EditarClase: React.FC = () => {
               </label>
               <input
                 type="text"
-                value={formData.instructor}
-                onChange={(e) => setFormData(prev => ({ ...prev, instructor: e.target.value }))}
+                value={formData.instructores[0] || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, instructores: [e.target.value] }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 required
               />

@@ -9,6 +9,13 @@ export interface Clase {
   color: string;
   activo: boolean;
   instructores: string[];
+  precio?: number;
+  dias?: string[];
+  horario?: string;
+  estado?: string;
+  nivel?: string;
+  requisitos?: string;
+  equipo?: string[];
 }
 
 export interface ClaseTurno {

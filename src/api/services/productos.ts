@@ -50,8 +50,8 @@ export const productosService = {
   },
 
   getAlumnosForVenta: async () => {
-    const { data } = await api.get('/alumnos', { params: { limit: 1000, estado: 'ACTIVO' } });
-    return data.data;
+    const { data } = await api.get('/productos/alumnos-for-ventas');
+    return data;
   },
 
   getCategorias: async () => {

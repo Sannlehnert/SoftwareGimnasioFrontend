@@ -1,14 +1,7 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../api/services/auth';
+import { authService, User } from '../api/services/auth';
 import { useToast } from './ToastProvider';
-
-interface User {
-  id: number;
-  nombre: string;
-  email: string;
-  rol: 'SUPERADMIN' | 'ADMIN' | 'EMPLEADO' | 'ALUMNO';
-}
 
 interface AuthContextType {
   user: User | null;
@@ -28,7 +21,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const token = localStorage.getItem('accessToken');
     if (token) {
       authService.getMe()
-        .then(userData => setUser(userData))
+        .then((userData: User) => setUser(userData))
         .catch(() => {
           localStorage.removeItem('accessToken');
         })
@@ -39,8 +32,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const login = async (identifier: string, password: string) => {
-    const { accessToken, user: userData } = await authService.login(identifier, password);
+    const { accessToken, user: userData } = await authService.login({ identifier, password });
     localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('userData', JSON.stringify(userData));
     setUser(userData);
 
     // Mostrar mensaje de bienvenida elegante
@@ -60,6 +54,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = () => {
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('userData');
     setUser(null);
   };
 

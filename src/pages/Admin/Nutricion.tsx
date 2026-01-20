@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../context/ToastProvider';
+import { nutricionService, PlanNutricional } from '../../api/services/nutricion';
 
 // Mock data for nutrition plans - replace with actual API call
 const mockPlanesNutricion = [
@@ -46,17 +47,13 @@ const Nutricion: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Mock query - replace with actual API service
-  const { data: planesNutricion, isLoading } = useQuery({
+  // API query para obtener planes nutricionales
+  const { data: planesNutricion, isLoading } = useQuery<PlanNutricional[]>({
     queryKey: ['planes-nutricion'],
-    queryFn: async () => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return mockPlanesNutricion;
-    }
+    queryFn: () => nutricionService.getPlanesNutricion()
   });
 
-  const filteredPlanes = planesNutricion?.filter(plan =>
+  const filteredPlanes = planesNutricion?.filter((plan: PlanNutricional) =>
     plan.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
     plan.nutricionista.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
@@ -105,19 +102,19 @@ const Nutricion: React.FC = () => {
         <div className="kpi-card">
           <p className="text-sm font-medium text-gray-600">Planes Activos</p>
           <p className="text-2xl font-bold text-green-600">
-            {planesNutricion?.filter(p => p.estado === 'ACTIVO').length || 0}
+            {planesNutricion?.filter((p: PlanNutricional) => p.estado === 'ACTIVO').length || 0}
           </p>
         </div>
         <div className="kpi-card">
           <p className="text-sm font-medium text-gray-600">Alumnos Inscritos</p>
           <p className="text-2xl font-bold text-purple-600">
-            {planesNutricion?.reduce((total, plan) => total + plan.alumnosInscritos, 0) || 0}
+            {planesNutricion?.reduce((total: number, plan: PlanNutricional) => total + plan.alumnosInscritos, 0) || 0}
           </p>
         </div>
         <div className="kpi-card">
           <p className="text-sm font-medium text-gray-600">Ingresos Mensuales</p>
           <p className="text-2xl font-bold text-success">
-            ${planesNutricion?.reduce((total, plan) => total + (plan.precio * plan.alumnosInscritos), 0).toLocaleString('es-AR') || '0'}
+            ${planesNutricion?.reduce((total: number, plan: PlanNutricional) => total + (plan.precio * plan.alumnosInscritos), 0).toLocaleString('es-AR') || '0'}
           </p>
         </div>
       </div>
@@ -177,7 +174,7 @@ const Nutricion: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                filteredPlanes.map((plan) => (
+                filteredPlanes.map((plan: PlanNutricional) => (
                   <tr key={plan.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>

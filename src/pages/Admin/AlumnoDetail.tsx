@@ -122,7 +122,7 @@ const AlumnoDetail: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">
             {alumno.nombre} {alumno.apellido}
           </h1>
-          <p className="text-gray-600">DNI: {alumno.dni} • {alumno.plan}</p>
+          <p className="text-gray-600">DNI: {alumno.dni} • {typeof alumno.plan === 'object' ? alumno.plan.nombre : alumno.plan}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={() => navigate('/alumnos')}>

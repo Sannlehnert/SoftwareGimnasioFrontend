@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../context/ToastProvider';
+import { personalizacionService } from '../../api/services/personalizacion';
 
 interface PersonalizacionConfig {
   id?: number;
@@ -63,27 +64,15 @@ const Personalizacion: React.FC = () => {
     }
   });
 
-  // Mock query para obtener configuración
+  // API query para obtener configuración de personalización
   const { data: config, isLoading } = useQuery({
     queryKey: ['personalizacion-config'],
-    queryFn: async () => {
-      return new Promise<PersonalizacionConfig>((resolve) => {
-        setTimeout(() => {
-          resolve(formData);
-        }, 500);
-      });
-    }
+    queryFn: () => personalizacionService.getConfiguracionPersonalizacion()
   });
 
-  // Mock mutation para guardar configuración
+  // API mutation para guardar configuración de personalización
   const saveMutation = useMutation({
-    mutationFn: async (data: PersonalizacionConfig) => {
-      return new Promise<PersonalizacionConfig>((resolve) => {
-        setTimeout(() => {
-          resolve(data);
-        }, 1000);
-      });
-    },
+    mutationFn: (data: PersonalizacionConfig) => personalizacionService.actualizarConfiguracionPersonalizacion(data),
     onSuccess: () => {
       addToast({
         type: 'success',

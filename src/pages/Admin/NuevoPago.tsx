@@ -103,7 +103,7 @@ const NuevoPago: React.FC = () => {
           </div>
           <div>
             <label className="text-sm font-medium text-gray-600">Plan</label>
-            <p className="font-semibold">{alumno.plan}</p>
+            <p className="font-semibold">{typeof alumno.plan === 'object' ? alumno.plan.nombre : alumno.plan}</p>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-600">Estado</label>

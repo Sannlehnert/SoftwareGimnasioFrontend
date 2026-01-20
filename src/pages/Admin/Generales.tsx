@@ -3,44 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../context/ToastProvider';
 import { useLocation } from 'react-router-dom';
-
-interface ConfiguracionGeneral {
-  id?: number;
-  nombreGimnasio: string;
-  direccion: string;
-  telefono: string;
-  email: string;
-  cuit: string;
-  ivaResponsable: boolean;
-  logoUrl?: string;
-  sitioWeb?: string;
-  redesSociales: {
-    facebook?: string;
-    instagram?: string;
-    twitter?: string;
-  };
-  horarioAtencion: {
-    lunes: { apertura: string; cierre: string };
-    martes: { apertura: string; cierre: string };
-    miercoles: { apertura: string; cierre: string };
-    jueves: { apertura: string; cierre: string };
-    viernes: { apertura: string; cierre: string };
-    sabado: { apertura: string; cierre: string };
-    domingo: { apertura: string; cierre: string };
-  };
-  configuracionPago: {
-    cuotaMensual: number;
-    descuentoPagoAdelantado: number;
-    diasGracia: number;
-    penalizacionMora: number;
-  };
-}
+import { generalesService, GeneralSettings } from '../../api/services/generales';
 
 const Generales: React.FC = () => {
   const { addToast } = useToast();
   const queryClient = useQueryClient();
 
-  const [formData, setFormData] = useState<ConfiguracionGeneral>({
+  const [formData, setFormData] = useState<GeneralSettings>({
     nombreGimnasio: 'MC GYM',
     direccion: '',
     telefono: '',
@@ -70,24 +39,17 @@ const Generales: React.FC = () => {
     }
   });
 
-  // Mock query para obtener configuración (simulando API)
+  // API query para obtener configuración general
   const { data: config, isLoading } = useQuery({
     queryKey: ['configuracion-general'],
-    queryFn: async () => {
-      // Simular llamada a API
-      return new Promise<ConfiguracionGeneral>((resolve) => {
-        setTimeout(() => {
-          resolve(formData);
-        }, 500);
-      });
-    }
+    queryFn: () => generalesService.getSettings()
   });
 
   // Mock mutation para guardar configuración
   const saveMutation = useMutation({
-    mutationFn: async (data: ConfiguracionGeneral) => {
+    mutationFn: async (data: GeneralSettings) => {
       // Simular llamada a API
-      return new Promise<ConfiguracionGeneral>((resolve) => {
+      return new Promise<GeneralSettings>((resolve) => {
         setTimeout(() => {
           resolve(data);
         }, 1000);
@@ -117,24 +79,24 @@ const Generales: React.FC = () => {
   }, [config]);
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({
+    setFormData((prev: GeneralSettings) => ({
       ...prev,
       [field]: value
     }));
   };
 
   const handleNestedChange = (parent: string, field: string, value: any) => {
-    setFormData(prev => ({
+    setFormData((prev: GeneralSettings) => ({
       ...prev,
       [parent]: {
-        ...prev[parent as keyof ConfiguracionGeneral] as any,
+        ...prev[parent as keyof GeneralSettings] as any,
         [field]: value
       }
     }));
   };
 
   const handleHorarioChange = (dia: string, tipo: 'apertura' | 'cierre', value: string) => {
-    setFormData(prev => ({
+    setFormData((prev: GeneralSettings) => ({
       ...prev,
       horarioAtencion: {
         ...prev.horarioAtencion,
@@ -147,7 +109,7 @@ const Generales: React.FC = () => {
   };
 
   const handleRedesSocialesChange = (red: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev: GeneralSettings) => ({
       ...prev,
       redesSociales: {
         ...prev.redesSociales,
@@ -319,35 +281,38 @@ const Generales: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Horarios de Atención</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Object.entries(formData.horarioAtencion).map(([dia, horario]) => (
-              <div key={dia} className="space-y-3">
-                <h3 className="font-medium text-gray-900 capitalize">{dia}</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Apertura
-                    </label>
-                    <input
-                      type="time"
-                      value={horario.apertura}
-                      onChange={(e) => handleHorarioChange(dia, 'apertura', e.target.value)}
-                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Cierre
-                    </label>
-                    <input
-                      type="time"
-                      value={horario.cierre}
-                      onChange={(e) => handleHorarioChange(dia, 'cierre', e.target.value)}
-                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
-                    />
+            {Object.entries(formData.horarioAtencion).map(([dia, horario]) => {
+              const horarioTyped = horario as { apertura: string; cierre: string };
+              return (
+                <div key={dia} className="space-y-3">
+                  <h3 className="font-medium text-gray-900 capitalize">{dia}</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Apertura
+                      </label>
+                      <input
+                        type="time"
+                        value={horarioTyped.apertura}
+                        onChange={(e) => handleHorarioChange(dia, 'apertura', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Cierre
+                      </label>
+                      <input
+                        type="time"
+                        value={horarioTyped.cierre}
+                        onChange={(e) => handleHorarioChange(dia, 'cierre', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

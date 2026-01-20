@@ -3,9 +3,23 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../context/ToastProvider';
+import { medidasService } from '../../api/services/medidas';
+
+interface Medida {
+  id: number;
+  alumnoId: number;
+  alumno: string;
+  fecha: string;
+  peso: number;
+  altura: number;
+  imc: number;
+  grasaCorporal: number;
+  masaMuscular: number;
+  observaciones: string;
+}
 
 // Mock data for measurements - replace with actual API call
-const mockMedidas = [
+const mockMedidas: Medida[] = [
   {
     id: 1,
     alumnoId: 1,
@@ -49,14 +63,10 @@ const Medidas: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Mock query - replace with actual API service
-  const { data: medidas, isLoading } = useQuery({
+  // API query for measurements
+  const { data: medidas, isLoading } = useQuery<Medida[]>({
     queryKey: ['medidas'],
-    queryFn: async () => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return mockMedidas;
-    }
+    queryFn: () => medidasService.getMedidas()
   });
 
   const filteredMedidas = medidas?.filter(medida =>

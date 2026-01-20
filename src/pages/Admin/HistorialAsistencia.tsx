@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Button from '../../components/ui/Button';
+import { asistenciaService, AsistenciaRecord } from '../../api/services/asistencia';
 
 const HistorialAsistencia: React.FC = () => {
   const { alumnoId } = useParams<{ alumnoId: string }>();
@@ -9,55 +10,15 @@ const HistorialAsistencia: React.FC = () => {
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
 
-  // Mock query - replace with actual API service
+  // API query for attendance history
   const { data: historial, isLoading } = useQuery({
     queryKey: ['historial-asistencia', alumnoId, fechaDesde, fechaHasta],
-    queryFn: async () => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      // Mock data - replace with actual API call
-      return [
-        {
-          id: 1,
-          fecha: '2024-01-15',
-          clase: 'Yoga',
-          hora: '10:00',
-          asistio: true,
-          observaciones: 'Llegó puntual'
-        },
-        {
-          id: 2,
-          fecha: '2024-01-14',
-          clase: 'Spinning',
-          hora: '11:00',
-          asistio: false,
-          observaciones: 'Ausente sin aviso'
-        },
-        {
-          id: 3,
-          fecha: '2024-01-13',
-          clase: 'Cross Funcional',
-          hora: '12:00',
-          asistio: true,
-          observaciones: 'Buen rendimiento'
-        },
-        {
-          id: 4,
-          fecha: '2024-01-12',
-          clase: 'Yoga',
-          hora: '10:00',
-          asistio: true,
-          observaciones: ''
-        },
-        {
-          id: 5,
-          fecha: '2024-01-11',
-          clase: 'Spinning',
-          hora: '11:00',
-          asistio: true,
-          observaciones: 'Excelente participación'
-        }
-      ];
+    queryFn: async (): Promise<AsistenciaRecord[]> => {
+      if (!alumnoId) throw new Error('ID de alumno requerido');
+      const params: any = {};
+      if (fechaDesde) params.desde = fechaDesde;
+      if (fechaHasta) params.hasta = fechaHasta;
+      return await asistenciaService.getAsistenciaAlumno(parseInt(alumnoId), params);
     }
   });
 

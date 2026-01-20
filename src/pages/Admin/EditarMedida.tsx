@@ -3,18 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../context/ToastProvider';
-
-// Mock data - replace with actual API
-const mockMedidaData = {
-  id: 1,
-  alumnoId: 1,
-  fecha: '2024-01-15',
-  peso: 75.5,
-  altura: 175,
-  grasaCorporal: 18.5,
-  masaMuscular: 65.2,
-  observaciones: 'Buen progreso en masa muscular'
-};
+import { medidasService } from '../../api/services/medidas';
 
 const EditarMedida: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,7 +25,19 @@ const EditarMedida: React.FC = () => {
     queryFn: async () => {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
-      return mockMedidaData;
+      return {
+        id: parseInt(id || '0'),
+        alumnoId: 1,
+        alumnoNombre: 'Mock Alumno',
+        fecha: new Date().toISOString().split('T')[0],
+        peso: 70,
+        altura: 170,
+        imc: 24.2,
+        grasaCorporal: 15,
+        masaMuscular: 60,
+        aguaCorporal: 55,
+        observaciones: 'Medidas iniciales'
+      };
     },
     enabled: !!id
   });
@@ -55,11 +56,7 @@ const EditarMedida: React.FC = () => {
   }, [medida]);
 
   const updateMedidaMutation = useMutation({
-    mutationFn: async (data: any) => {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return { ...data, id: Number(id) };
-    },
+    mutationFn: (data: any) => medidasService.updateMedida(Number(id), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['medidas'] });
       addToast({

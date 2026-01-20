@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../context/ToastProvider';
+import { turnosService } from '../../api/services/turnos';
 
 const EditarTurno: React.FC = () => {
   const { turnoId } = useParams<{ turnoId: string }>();
@@ -14,25 +15,17 @@ const EditarTurno: React.FC = () => {
   const [fecha, setFecha] = useState('');
   const [horario, setHorario] = useState('');
   const [instructor, setInstructor] = useState('');
-  const [estado, setEstado] = useState('confirmado');
+  const [estado, setEstado] = useState<'ACTIVO' | 'CANCELADO' | 'COMPLETO'>('ACTIVO');
 
-  // Mock query - replace with actual API service
   const { data: turno, isLoading } = useQuery({
     queryKey: ['turno', turnoId],
     queryFn: async () => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      // Mock data - replace with actual API call
-      return {
-        id: parseInt(turnoId || '1'),
-        clase: 'Yoga',
-        fecha: '2024-01-15',
-        horario: '10:00',
-        instructor: 'María López',
-        estado: 'confirmado',
-        alumno: 'Juan Pérez'
-      };
-    }
+      const turnos = await turnosService.getTurnos();
+      const turno = turnos.find((t: any) => t.id === parseInt(turnoId || '0'));
+      if (!turno) throw new Error('Turno no encontrado');
+      return turno;
+    },
+    enabled: !!turnoId
   });
 
   useEffect(() => {
@@ -46,12 +39,7 @@ const EditarTurno: React.FC = () => {
   }, [turno]);
 
   const updateTurnoMutation = useMutation({
-    mutationFn: async (data: { clase: string; fecha: string; horario: string; instructor: string; estado: string }) => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      // Mock update - replace with actual API call
-      return { ...turno, ...data };
-    },
+    mutationFn: (data: { clase: string; fecha: string; horario: string; instructor: string; estado: 'ACTIVO' | 'CANCELADO' | 'COMPLETO' }) => turnosService.updateTurno(Number(turnoId), data),
     onSuccess: () => {
       addToast({
         type: 'success',
@@ -192,12 +180,12 @@ const EditarTurno: React.FC = () => {
             </label>
             <select
               value={estado}
-              onChange={(e) => setEstado(e.target.value)}
+              onChange={(e) => setEstado(e.target.value as 'ACTIVO' | 'CANCELADO' | 'COMPLETO')}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
-              <option value="confirmado">Confirmado</option>
-              <option value="pendiente">Pendiente</option>
-              <option value="cancelado">Cancelado</option>
+              <option value="ACTIVO">Activo</option>
+              <option value="CANCELADO">Cancelado</option>
+              <option value="COMPLETO">Completo</option>
             </select>
           </div>
         </div>

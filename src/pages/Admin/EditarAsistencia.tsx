@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../context/ToastProvider';
+import { asistenciaService, AsistenciaRecord } from '../../api/services/asistencia';
 
 const EditarAsistencia: React.FC = () => {
   const { asistenciaId } = useParams<{ asistenciaId: string }>();
@@ -13,22 +14,16 @@ const EditarAsistencia: React.FC = () => {
   const [asistio, setAsistio] = useState(false);
   const [observaciones, setObservaciones] = useState('');
 
-  // Mock query - replace with actual API service
+  // API query for attendance record
   const { data: asistencia, isLoading } = useQuery({
     queryKey: ['asistencia', asistenciaId],
-    queryFn: async () => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      // Mock data - replace with actual API call
-      return {
-        id: parseInt(asistenciaId || '1'),
-        alumno: 'Juan Pérez',
-        clase: 'Yoga',
-        fecha: '2024-01-15',
-        hora: '10:00',
-        asistio: true,
-        observaciones: 'Llegó puntual'
-      };
+    queryFn: async (): Promise<AsistenciaRecord> => {
+      // For now, we'll get all records and find the specific one
+      // In a real implementation, there would be a getAsistenciaById endpoint
+      const records = await asistenciaService.getAsistencias();
+      const record = records.find((r: AsistenciaRecord) => r.id === parseInt(asistenciaId || '0'));
+      if (!record) throw new Error('Asistencia no encontrada');
+      return record;
     }
   });
 
@@ -41,10 +36,8 @@ const EditarAsistencia: React.FC = () => {
 
   const updateAsistenciaMutation = useMutation({
     mutationFn: async (data: { asistio: boolean; observaciones: string }) => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      // Mock update - replace with actual API call
-      return { ...asistencia, ...data };
+      if (!asistencia) throw new Error('No hay registro de asistencia');
+      return await asistenciaService.actualizarAsistencia(asistencia.id, data);
     },
     onSuccess: () => {
       addToast({

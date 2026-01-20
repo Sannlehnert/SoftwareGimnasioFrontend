@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../context/ToastProvider';
+import { asistenciaService, AsistenciaRecord } from '../../api/services/asistencia';
 
 // Mock data for attendance
 const mockAsistencia = [
@@ -60,13 +61,15 @@ const Asistencia: React.FC = () => {
   const [fechaFiltro, setFechaFiltro] = useState('');
   const [claseFiltro, setClaseFiltro] = useState('');
 
-  // Mock query - replace with actual API service
+  // API query for attendance records
   const { data: asistencia, isLoading } = useQuery({
-    queryKey: ['asistencia'],
-    queryFn: async () => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return mockAsistencia;
+    queryKey: ['asistencia', fechaFiltro, claseFiltro, searchTerm],
+    queryFn: async (): Promise<AsistenciaRecord[]> => {
+      const params: any = {};
+      if (fechaFiltro) params.desde = fechaFiltro;
+      if (fechaFiltro) params.hasta = fechaFiltro;
+      if (claseFiltro) params.claseId = parseInt(claseFiltro);
+      return await asistenciaService.getAsistencias(params);
     }
   });
 

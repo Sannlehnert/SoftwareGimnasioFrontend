@@ -26,12 +26,12 @@ export interface Asistencia {
 
 export const accesoService = {
   registrarAcceso: async (dni: string, deviceId?: string): Promise<AccesoResponse> => {
-    const { data } = await api.post('/acceso', { dni, deviceId });
+    const { data } = await api.post('/acceso/registrar', { dni, deviceId });
     return data;
   },
 
   getAsistenciasHoy: async (): Promise<Asistencia[]> => {
-    const { data } = await api.get('/acceso/hoy');
+    const { data } = await api.get('/asistencias/hoy');
     return data;
   },
 
@@ -42,17 +42,17 @@ export const accesoService = {
     page?: number;
     limit?: number;
   }) => {
-    const { data } = await api.get('/acceso/asistencias', { params });
+    const { data } = await api.get('/asistencias', { params });
     return data;
   },
 
   getEstadisticasAcceso: async (params?: { desde?: string; hasta?: string }) => {
-    const { data } = await api.get('/acceso/estadisticas', { params });
+    const { data } = await api.get('/asistencias/estadisticas', { params });
     return data;
   },
 
   getAccesosRecientes: async (limit: number = 10) => {
-    const { data } = await api.get('/acceso/recientes', { params: { limit } });
+    const { data } = await api.get('/asistencias', { params: { limit } });
     return data;
   },
 };

@@ -38,8 +38,12 @@ const Alumnos: React.FC = () => {
       )
     },
     { key: 'telefono', label: 'Teléfono' },
-    { key: 'plan', label: 'Plan' },
-    { 
+    {
+      key: 'plan',
+      label: 'Plan',
+      render: (value: any) => typeof value === 'object' ? value.nombre : value
+    },
+    {
       key: 'fechaVencimiento', 
       label: 'Vencimiento', 
       render: (value: string, row: any) => {
@@ -82,13 +86,13 @@ const Alumnos: React.FC = () => {
 
   // Calcular estadísticas
   const estadisticas = {
-    total: alumnos?.data?.length || 0,
-    activos: alumnos?.data?.filter((a: any) => a.estado === 'ACTIVO').length || 0,
-    vencidos: alumnos?.data?.filter((a: any) => {
+    total: alumnos?.length || 0,
+    activos: alumnos?.filter((a: any) => a.estado === 'ACTIVO').length || 0,
+    vencidos: alumnos?.filter((a: any) => {
       const vencimiento = new Date(a.fechaVencimiento);
       return vencimiento < new Date() && a.estado === 'ACTIVO';
     }).length || 0,
-    suspendidos: alumnos?.data?.filter((a: any) => a.estado === 'SUSPENDIDO').length || 0,
+    suspendidos: alumnos?.filter((a: any) => a.estado === 'SUSPENDIDO').length || 0,
   };
 
   if (error) {
@@ -152,7 +156,7 @@ const Alumnos: React.FC = () => {
           dni: alumno.dni,
           email: alumno.email,
           telefono: alumno.telefono,
-          plan: alumno.plan,
+          plan: typeof alumno.plan === 'object' ? alumno.plan.nombre : alumno.plan,
           estado: alumno.estado,
           fechaVencimiento: new Date(alumno.fechaVencimiento).toLocaleDateString('es-AR'),
         })),
@@ -275,8 +279,8 @@ const Alumnos: React.FC = () => {
       {/* Tabla */}
       <DataTable
         columns={columns}
-        data={alumnos?.data || []}
-        totalItems={alumnos?.total || 0}
+        data={alumnos || []}
+        totalItems={alumnos?.length || 0}
         serverSidePagination={true}
         onPageChange={(page: number) => {
           // La paginación se maneja automáticamente con react-query
